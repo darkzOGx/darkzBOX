@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  workspaces WorkspaceMember[]
+}
+
+model Workspace {
+  id        String   @id @default(cuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members       WorkspaceMember[]
+  emailAccounts EmailAccount[]
+  campaigns     Campaign[]
+  templates     Template[]
+  replyGuyConfig ReplyGuyConfig?
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  userId      String
+  workspaceId String
+  role        String    @default("MEMBER") // OWNER, ADMIN, MEMBER
+  
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+
+  @@unique([userId, workspaceId])
+}
+
+// Connected SMTP/IMAP Accounts
+model EmailAccount {
+  id          String    @id @default(cuid())
+  workspaceId String
+  email       String
+  name        String?
+  provider    String   @default("SMTP") // SMTP, GMAIL, OUTLOOK
+  
+  // Credentials (should be encrypted at app level)
+  smtpHost    String
+  smtpPort    Int
+  smtpUser    String
+  smtpPass    String
+  imapHost    String
+  imapPort    Int
+  imapUser    String
+  imapPass    String? // Optional if using OAuth
+  
+  // OAuth Credentials
+  accessToken   String?
+  refreshToken  String?
+  expiresAt     Int? // Timestamp
+  tokenType     String?
+  idToken       String?
+  
+  // Limits & configuration
+  dailyLimit    Int       @default(50)
+  sentToday     Int       @default(0)
+  lastSentAt    DateTime?
+  
+  // Warmup configuration
+  warmupEnabled Boolean   @default(false)
+  
+  workspace     Workspace @relation(fields: [workspaceId], references: [id])
+  logs          EmailLog[]
+  leads         Lead[]    @relation("AssignedAccount") // For sticky sender mapping
+}
+
+model Campaign {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  status      String    @default("DRAFT") // DRAFT, ACTIVE, PAUSED, COMPLETED
+  
+  // Schedule Window (stored as JSON)
+  // e.g., { "days": [1,2,3,4,5], "start": "09:00", "end": "17:00", "timezone": "America/New_York" }
+  schedule    Json?     
+  
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+  steps       CampaignStep[]
+  leads       Lead[]
+  logs        EmailLog[]
+}
+
+model CampaignStep {
+  id          String   @id @default(cuid())
+  campaignId  String
+  order       Int      // 1, 2, 3...
+  waitDays    Int      @default(0) // Wait time before this step
+  
+  subject     String?  // Null for follow-ups (replies to previous thread)
+  body        String   // Supports Spintax
+  
+  campaign    Campaign @relation(fields: [campaignId], references: [id])
+}
+
+model Lead {
+  id          String   @id @default(cuid())
+  campaignId  String
+  email       String
+  firstName   String?
+  lastName    String?
+  companyName String?
+  variables   Json?    // Custom variables for replacement
+  
+  status      String   @default("PENDING") // PENDING, CONTACTED, REPLIED, BOUNCED, UNSUBSCRIBED
+  
+  // Progression
+  currentStep Int      @default(0)
+  nextScheduledAt DateTime?
+  
+  // Affinity
+  assignedAccountId String?
+  assignedAccount   EmailAccount? @relation("AssignedAccount", fields: [assignedAccountId], references: [id])
+  
+  campaign    Campaign @relation(fields: [campaignId], references: [id])
+  logs        EmailLog[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  lastReadAt  DateTime? @default(now())
+
+  @@unique([campaignId, email])
+}
+
+model EmailLog {
+  id             String   @id @default(cuid())
+  leadId         String?
+  emailAccountId String
+  campaignId     String?  // For easier analytics
+  
+  type           String   // SENT, OPENED, REPLIED, BOUNCED
+  messageId      String?  // Message-ID header for threading
+  threadId       String?  // Gmail Thread ID or computed thread key
+  
+  subject        String?
+  bodySnippet    String?
+  
+  sentAt         DateTime @default(now())
+  
+  lead           Lead?         @relation(fields: [leadId], references: [id])
+  emailAccount   EmailAccount  @relation(fields: [emailAccountId], references: [id])
+  campaign       Campaign?     @relation(fields: [campaignId], references: [id])
+}
+
+model ReplyGuyConfig {
+  id              String    @id @default(cuid())
+  workspaceId     String    @unique
+  enabled         Boolean   @default(false)
+  anthropicApiKey String?
+  customPrompt    String?   // "You are a helpful assistant..."
+  businessContext String?   // "We sell widgets..."
+  
+  updatedAt       DateTime  @updatedAt
+  
+  workspace       Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+model Template {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  content     String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
