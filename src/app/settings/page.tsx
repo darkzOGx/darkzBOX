@@ -1,7 +1,8 @@
-import { Plus, Trash2, CheckCircle2, AlertCircle, Server, Mail } from "lucide-react";
+import { Plus, Trash2, CheckCircle2, AlertCircle, Server, Mail, Settings } from "lucide-react";
 import { getEmailAccounts, deleteEmailAccount } from "@/actions";
 import { revalidatePath } from "next/cache";
 import { EmailAccountForm } from "@/components/EmailAccountForm";
+import { SenderConfigForm } from "@/components/SenderConfigForm";
 
 export default async function SettingsPage() {
     const accounts = await getEmailAccounts();
@@ -15,9 +16,24 @@ export default async function SettingsPage() {
 
     return (
         <div className="p-8 max-w-5xl mx-auto space-y-8">
-            <div>
-                <h1 className="text-2xl font-bold text-slate-900">Email Accounts</h1>
-                <p className="text-slate-500 text-sm mt-1">Connect your sending accounts (Gmail, Outlook, SMTP).</p>
+            {/* Page Header */}
+            <div className="flex items-center gap-3">
+                <div className="p-2 bg-slate-100 rounded-lg">
+                    <Settings className="w-6 h-6 text-slate-600" />
+                </div>
+                <div>
+                    <h1 className="text-2xl font-bold text-slate-900">Settings</h1>
+                    <p className="text-slate-500 text-sm">Manage your email accounts and sender configuration</p>
+                </div>
+            </div>
+
+            {/* Sender SMTP Configuration */}
+            <SenderConfigForm />
+
+            {/* Email Accounts Section */}
+            <div className="pt-4">
+                <h2 className="text-lg font-semibold text-slate-900 mb-1">Email Accounts</h2>
+                <p className="text-slate-500 text-sm mb-4">Connect your sending accounts (Gmail, Outlook, SMTP) for campaigns.</p>
             </div>
 
             {/* Account List */}

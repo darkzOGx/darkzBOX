@@ -10,7 +10,7 @@ export const replyGuyQueue = new Queue(QUEUE_NAME, { connection });
 
 // Worker to process scheduled AI replies
 export const replyGuyWorker = new Worker(QUEUE_NAME, async (job: Job) => {
-    const { leadId, aiResponse, workspaceId } = job.data;
+    const { leadId, aiResponse, workspaceId, threadingInfo } = job.data;
 
     console.log(`[ReplyGuyWorker] Processing delayed reply for Lead: ${leadId}`);
 
@@ -30,8 +30,8 @@ export const replyGuyWorker = new Worker(QUEUE_NAME, async (job: Job) => {
             return;
         }
 
-        // Send the reply
-        await sendReply(leadId, aiResponse);
+        // Send the reply with threading info
+        await sendReply(leadId, aiResponse, threadingInfo);
 
         // Update the log type to AI_REPLY
         const lastLog = await prisma.emailLog.findFirst({

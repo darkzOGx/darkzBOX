@@ -35,15 +35,62 @@ export const campaignWorker = new Worker(QUEUE_NAME, async (job: Job) => {
         return;
     }
 
-    // 3. Fetch the Step Content
+    // 3. Fetch the Step Content with variants
     const step = await prisma.campaignStep.findFirst({
-        where: { campaignId: campaign.id, order: stepOrder }
+        where: { campaignId: campaign.id, order: stepOrder },
+        include: {
+            variants: {
+                orderBy: { name: 'asc' }
+            }
+        }
     });
 
     if (!step) {
         // End of campaign?
         console.log('No step found, campaign completed for this lead.');
         return;
+    }
+
+    // 3.5 Check blocklist before sending
+    const blockedEmail = await prisma.blockedEmail.findFirst({
+        where: {
+            workspaceId: campaign.workspaceId,
+            email: lead.email.toLowerCase()
+        }
+    });
+
+    if (blockedEmail) {
+        console.log(`[Blocklist] Lead ${lead.email} is blocked. Skipping email.`);
+        // Update lead status to indicate they're blocked
+        await prisma.lead.update({
+            where: { id: lead.id },
+            data: { status: 'UNSUBSCRIBED' }
+        });
+        return;
+    }
+
+    // 3.6 Select variant if A/B testing is enabled
+    let selectedVariant: { id: string; name: string; subject: string | null; body: string; weight: number } | null = null;
+
+    if (step.variants && step.variants.length > 0) {
+        // Weighted random selection
+        const totalWeight = step.variants.reduce((sum, v) => sum + v.weight, 0);
+        let random = Math.random() * totalWeight;
+
+        for (const variant of step.variants) {
+            random -= variant.weight;
+            if (random <= 0) {
+                selectedVariant = variant;
+                break;
+            }
+        }
+
+        // Fallback to first variant if something went wrong
+        if (!selectedVariant) {
+            selectedVariant = step.variants[0];
+        }
+
+        console.log(`[A/B Test] Selected variant ${selectedVariant.name} for lead ${lead.email}`);
     }
 
     // 4. Select Email Account (Round Robin / Load Balancing)
@@ -68,19 +115,24 @@ export const campaignWorker = new Worker(QUEUE_NAME, async (job: Job) => {
         ...((lead.variables as Record<string, any>) || {})
     };
 
-    const subject = step.subject ? replaceVariables(replaceSpintax(step.subject), variables) : null;
-    const body = replaceVariables(replaceSpintax(step.body), variables);
+    // Use variant content if A/B testing, otherwise use step content
+    const rawSubject = selectedVariant ? selectedVariant.subject : step.subject;
+    const rawBody = selectedVariant ? selectedVariant.body : step.body;
+
+    const subject = rawSubject ? replaceVariables(replaceSpintax(rawSubject), variables) : null;
+    const body = replaceVariables(replaceSpintax(rawBody), variables);
 
     console.log('[DEBUG] Prepared Email:', {
         to: lead.email,
         vars: variables,
-        subjectRaw: step.subject,
+        subjectRaw: rawSubject,
         subjectFinal: subject,
-        bodyFinal: body
+        bodyFinal: body,
+        variant: selectedVariant?.name || 'none'
     });
 
     // 6. Send Email
-    // 6. Create Log & Enable Tracking
+    // 6. Create Log & Enable Tracking (with variant tracking for A/B tests)
     const log = await prisma.emailLog.create({
         data: {
             leadId: lead.id,
@@ -89,6 +141,7 @@ export const campaignWorker = new Worker(QUEUE_NAME, async (job: Job) => {
             type: 'SENT',
             subject: subject,
             bodySnippet: body.substring(0, 100),
+            variantId: selectedVariant?.id || null,
             sentAt: new Date()
         }
     });

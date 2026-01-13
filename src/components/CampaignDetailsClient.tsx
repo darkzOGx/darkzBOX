@@ -1,6 +1,6 @@
 'use client';
 
-import { ArrowLeft, Clock, Mail, MoreHorizontal, Pause, Play, Users } from "lucide-react";
+import { ArrowLeft, Clock, Mail, MoreHorizontal, Pause, Play, Users, FlaskConical, TrendingUp } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
@@ -9,16 +9,29 @@ import { LeadSelectionModal } from "@/components/LeadSelectionModal";
 import { toggleCampaignStatus } from "@/actions";
 import { useRouter } from "next/navigation";
 
+interface VariantStats {
+    [key: string]: {
+        name: string;
+        sent: number;
+        opened: number;
+        replied: number;
+    };
+}
+
 interface CampaignDetailsClientProps {
     campaign: any;
     sent: number;
     opened: number;
     replied: number;
+    variantStats?: VariantStats;
 }
 
-export function CampaignDetailsClient({ campaign, sent, opened, replied }: CampaignDetailsClientProps) {
+export function CampaignDetailsClient({ campaign, sent, opened, replied, variantStats = {} }: CampaignDetailsClientProps) {
     const [isAddLeadOpen, setIsAddLeadOpen] = useState(false);
     const [isLeadSelectionOpen, setIsLeadSelectionOpen] = useState(false);
+
+    // Check if any step has A/B testing enabled
+    const hasABTests = campaign.steps.some((step: any) => step.variants && step.variants.length > 0);
     const router = useRouter();
 
     const handleStatusToggle = async () => {
@@ -105,8 +118,14 @@ export function CampaignDetailsClient({ campaign, sent, opened, replied }: Campa
 
             {/* Steps Visualizer */}
             <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-                <div className="p-4 border-b border-slate-200 bg-slate-50">
+                <div className="p-4 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
                     <h3 className="font-semibold text-slate-900">Sequence Steps</h3>
+                    {hasABTests && (
+                        <span className="flex items-center gap-1.5 text-xs font-medium text-purple-700 bg-purple-100 px-2 py-1 rounded-full">
+                            <FlaskConical className="w-3 h-3" />
+                            A/B Testing Active
+                        </span>
+                    )}
                 </div>
                 <div className="divide-y divide-slate-100">
                     {campaign.steps.map((step: any, idx: number) => (
@@ -117,19 +136,87 @@ export function CampaignDetailsClient({ campaign, sent, opened, replied }: Campa
                                 </div>
                                 {idx < campaign.steps.length - 1 && <div className="w-0.5 h-full bg-slate-100 my-2"></div>}
                             </div>
-                            <div className="flex-1 space-y-2">
+                            <div className="flex-1 space-y-3">
                                 <div className="flex items-center justify-between">
-                                    <h4 className="font-medium text-slate-900 text-sm">
-                                        {idx === 0 ? step.subject : 'Follow-up Email'}
-                                    </h4>
+                                    <div className="flex items-center gap-2">
+                                        <h4 className="font-medium text-slate-900 text-sm">
+                                            {idx === 0 ? step.subject : 'Follow-up Email'}
+                                        </h4>
+                                        {step.variants && step.variants.length > 0 && (
+                                            <span className="flex items-center gap-1 text-xs font-medium text-purple-600 bg-purple-50 px-2 py-0.5 rounded">
+                                                <FlaskConical className="w-3 h-3" />
+                                                {step.variants.length} variants
+                                            </span>
+                                        )}
+                                    </div>
                                     <div className="flex items-center gap-2 text-xs text-slate-500">
                                         <Clock className="w-3 h-3" />
                                         Wait {step.waitDays} days
                                     </div>
                                 </div>
-                                <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm text-slate-600">
-                                    {step.body.substring(0, 150)}...
-                                </div>
+
+                                {/* Regular step content (no variants) */}
+                                {(!step.variants || step.variants.length === 0) && (
+                                    <div
+                                        className="bg-slate-50 p-4 rounded-lg border border-slate-200 text-sm text-slate-600 prose prose-sm max-w-none"
+                                        dangerouslySetInnerHTML={{ __html: step.body.substring(0, 300) + (step.body.length > 300 ? '...' : '') }}
+                                    />
+                                )}
+
+                                {/* A/B Test Variants */}
+                                {step.variants && step.variants.length > 0 && (
+                                    <div className="space-y-3">
+                                        {step.variants.map((variant: any, varIdx: number) => {
+                                            const stats = variantStats[variant.id];
+                                            const openRate = stats && stats.sent > 0 ? ((stats.opened / stats.sent) * 100).toFixed(1) : '0.0';
+                                            const replyRate = stats && stats.sent > 0 ? ((stats.replied / stats.sent) * 100).toFixed(1) : '0.0';
+
+                                            return (
+                                                <div key={variant.id} className="border border-slate-200 rounded-lg overflow-hidden">
+                                                    <div className="flex items-center justify-between px-4 py-2 bg-slate-50 border-b border-slate-200">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className={cn(
+                                                                "w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold",
+                                                                varIdx === 0 ? "bg-blue-100 text-blue-700" :
+                                                                    varIdx === 1 ? "bg-green-100 text-green-700" :
+                                                                        varIdx === 2 ? "bg-orange-100 text-orange-700" :
+                                                                            "bg-purple-100 text-purple-700"
+                                                            )}>
+                                                                {variant.name}
+                                                            </span>
+                                                            <span className="text-sm font-medium text-slate-700">
+                                                                Variant {variant.name}
+                                                            </span>
+                                                            <span className="text-xs text-slate-400">
+                                                                ({variant.weight}% traffic)
+                                                            </span>
+                                                        </div>
+                                                        {stats && stats.sent > 0 && (
+                                                            <div className="flex items-center gap-4 text-xs">
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-slate-500">Sent:</span>
+                                                                    <span className="font-semibold text-slate-700">{stats.sent}</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-slate-500">Opens:</span>
+                                                                    <span className="font-semibold text-green-600">{openRate}%</span>
+                                                                </div>
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-slate-500">Replies:</span>
+                                                                    <span className="font-semibold text-blue-600">{replyRate}%</span>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    <div
+                                                        className="p-4 text-sm text-slate-600 prose prose-sm max-w-none"
+                                                        dangerouslySetInnerHTML={{ __html: variant.body.substring(0, 200) + (variant.body.length > 200 ? '...' : '') }}
+                                                    />
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
                             </div>
                         </div>
                     ))}

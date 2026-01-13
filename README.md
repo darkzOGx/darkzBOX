@@ -10,11 +10,15 @@ An open-source email automation platform built with Next.js. Create multi-step e
 ## ✨ Features
 
 - **📧 Email Campaigns** - Multi-step email sequences with Spintax support for personalization
+- **🔀 A/B Testing** - Test multiple email variants with configurable weights per step
+- **📡 Sender** - One-time bulk email campaigns without follow-up sequences
 - **👥 Lead Management** - Import leads, track status (pending, contacted, replied, bounced)
 - **📬 Unibox** - Unified inbox showing all replies across campaigns
 - **🤖 Reply Guy** - AI-powered auto-responses using Anthropic Claude
 - **📊 Analytics Dashboard** - Track open rates, reply rates, and campaign performance
 - **📨 Email Accounts** - Connect multiple SMTP/IMAP accounts with Google OAuth support
+- **📝 Rich Text Editor** - Full WYSIWYG editor with HTML source toggle for all email composition
+- **🚫 Blocklist** - Manage blocked domains and email addresses
 - **📝 Templates** - Save and reuse email templates
 - **⏰ Scheduling** - Set campaign sending windows by day/time
 
@@ -29,6 +33,7 @@ An open-source email automation platform built with Next.js. Create multi-step e
 | [BullMQ](https://docs.bullmq.io/) | Job queue for email scheduling |
 | [Redis](https://redis.io/) | Queue backend |
 | [Tailwind CSS](https://tailwindcss.com/) | Styling |
+| [Tiptap](https://tiptap.dev/) | Rich text editor |
 | [NextAuth.js](https://next-auth.js.org/) | Authentication |
 | [Nodemailer](https://nodemailer.com/) | Email sending |
 | [Anthropic Claude](https://www.anthropic.com/) | AI auto-responses (Reply Guy) |
@@ -140,16 +145,25 @@ darkzBOX/
 │   ├── schema.prisma      # Database schema
 │   └── seed.ts            # Seed data
 ├── src/
-│   ├── actions.ts         # Server actions
+│   ├── actions/           # Server actions (modular)
+│   │   ├── blocklist.ts   # Blocklist actions
+│   │   ├── leads.ts       # Lead management actions
+│   │   └── sender.ts      # Sender actions
+│   ├── actions.ts         # Main server actions
 │   ├── app/               # Next.js App Router pages
 │   │   ├── analytics/     # Analytics dashboard
 │   │   ├── api/           # API routes
+│   │   ├── blocklist/     # Blocklist management
 │   │   ├── campaigns/     # Campaign management
 │   │   ├── leads/         # Lead management
 │   │   ├── reply-guy/     # AI auto-response config
+│   │   ├── sender/        # One-time email sender
 │   │   ├── settings/      # Settings pages
 │   │   └── unibox/        # Unified inbox
 │   ├── components/        # React components
+│   │   ├── RichTextEditor.tsx  # WYSIWYG editor with HTML toggle
+│   │   ├── Sidebar.tsx    # Navigation sidebar
+│   │   └── ...
 │   ├── lib/               # Utilities
 │   │   ├── auth.ts        # NextAuth config
 │   │   ├── email-engine.ts # Email sending
@@ -173,10 +187,20 @@ darkzBOX/
 4. Create email steps with Spintax support:
    ```
    Hi {{firstName}},
-   
+
    {I noticed|I saw|I found} your company {{companyName}}...
    ```
 5. Launch the campaign
+
+### A/B Testing
+
+Test different email variations to optimize your campaigns:
+
+1. When creating or editing a campaign step, toggle **Enable A/B Test**
+2. Add multiple variants (A, B, C, etc.) with different subject lines and body content
+3. Set weight percentages for each variant (must total 100%)
+4. The system randomly selects a variant for each lead based on the weights
+5. Track performance of each variant in the campaign analytics
 
 ### Managing Leads
 
@@ -190,6 +214,37 @@ darkzBOX/
 2. Add your Anthropic API key
 3. Configure business context and custom prompts
 4. Enable auto-responses for incoming emails
+
+### One-Time Sender
+
+The **Sender** feature is for sending immediate, one-time email campaigns without follow-up sequences:
+
+1. Navigate to **Sender** in the sidebar
+2. Create email templates with personalization variables (`{{firstName}}`, `{{lastName}}`, `{{company}}`)
+3. Create lead groups and upload CSV files with your contacts
+4. Create a campaign by selecting a template and lead group
+5. Start the campaign to send emails immediately
+
+> **Note:** For multi-step email sequences with automated follow-ups, use the **Campaigns** feature instead.
+
+### Managing the Blocklist
+
+Block unwanted domains or email addresses from receiving your campaigns:
+
+1. Go to **Blocklist** in the sidebar
+2. Add domains (e.g., `competitor.com`) or specific emails
+3. Blocked addresses are automatically excluded from all campaigns
+
+### Rich Text Editor
+
+All email composition areas include a full-featured rich text editor:
+
+- **Formatting:** Bold, italic, underline, strikethrough
+- **Lists:** Bullet and numbered lists with indentation
+- **Alignment:** Left, center, right text alignment
+- **Links:** Insert and edit hyperlinks
+- **Variables:** Quick-insert personalization variables
+- **HTML Mode:** Toggle to view/edit raw HTML source (click the `</>` icon)
 
 ## 🤝 Contributing
 

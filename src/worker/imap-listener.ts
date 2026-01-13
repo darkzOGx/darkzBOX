@@ -67,15 +67,51 @@ async function checkImapForAccount(account: any) {
     // OPTIMIZATION: Only check the 10 most recent emails for speed
     messages = messages.slice(0, 10);
 
-    // Pre-fetch all leads for fast in-memory matching
-    const allLeads = await prisma.lead.findMany({
+    // Pre-fetch all leads for fast in-memory matching (Campaign leads)
+    const campaignLeads = await prisma.lead.findMany({
         select: { id: true, email: true, status: true, campaignId: true }
     });
 
+    // Pre-fetch all Sender leads as well for Unibox tracking
+    const senderLeads = await prisma.senderLead.findMany({
+        select: { id: true, email: true, groupId: true }
+    });
+
     // Create a Map for O(1) matching using normalized emails
-    const leadMap = new Map<string, typeof allLeads[0]>();
-    for (const l of allLeads) {
-        leadMap.set(normalizeEmail(l.email), l);
+    // Store both campaign leads and sender leads with a source indicator
+    type LeadEntry = {
+        id: string;
+        email: string;
+        source: 'campaign' | 'sender';
+        status?: string;
+        campaignId?: string;
+        groupId?: string;
+    };
+
+    const leadMap = new Map<string, LeadEntry>();
+
+    // Add campaign leads
+    for (const l of campaignLeads) {
+        leadMap.set(normalizeEmail(l.email), {
+            id: l.id,
+            email: l.email,
+            source: 'campaign',
+            status: l.status,
+            campaignId: l.campaignId
+        });
+    }
+
+    // Add sender leads (won't overwrite if campaign lead exists with same email)
+    for (const l of senderLeads) {
+        const normalized = normalizeEmail(l.email);
+        if (!leadMap.has(normalized)) {
+            leadMap.set(normalized, {
+                id: l.id,
+                email: l.email,
+                source: 'sender',
+                groupId: l.groupId
+            });
+        }
     }
 
     // Pre-fetch ALL existing message IDs to avoid reprocessing
@@ -130,7 +166,7 @@ async function checkImapForAccount(account: any) {
         const rawBody = msg.parts.find((part: any) => part.which === 'TEXT')?.body;
         const parsed = await simpleParser(rawBody || '');
 
-        console.log(`    -> NEW REPLY from ${lead.email}`);
+        console.log(`    -> NEW REPLY from ${lead.email} (${lead.source})`);
 
         // Mark as SEEN FIRST
         await connection.addFlags(uid, '\\Seen');
@@ -138,38 +174,57 @@ async function checkImapForAccount(account: any) {
         // Add to our in-memory set to prevent re-processing within this sync
         processedMessageIds.add(uniqueId);
 
-        // Update Lead Status
-        if (lead.status !== 'REPLIED') {
-            await prisma.lead.update({
-                where: { id: lead.id },
-                data: { status: 'REPLIED' }
+        // Handle based on lead source
+        if (lead.source === 'campaign') {
+            // Update Campaign Lead Status
+            if (lead.status !== 'REPLIED') {
+                await prisma.lead.update({
+                    where: { id: lead.id },
+                    data: { status: 'REPLIED' }
+                });
+            }
+
+            // Log Reply for campaign lead
+            await prisma.emailLog.create({
+                data: {
+                    leadId: lead.id,
+                    campaignId: lead.campaignId,
+                    emailAccountId: account.id,
+                    type: 'REPLIED',
+                    messageId: uniqueId,
+                    subject: subjectHeader || 'No Subject',
+                    bodySnippet: parsed.text ? parsed.text.substring(0, 200) : 'No content',
+                    sentAt: new Date()
+                }
+            });
+
+            // Reply Guy - pass messageId for threading (only for campaign leads)
+            await processIncomingEmailReply({
+                leadId: lead.id,
+                workspaceId: account.workspaceId,
+                emailBody: parsed.text || '',
+                emailSubject: subjectHeader || '',
+                senderName: fromEmail,
+                inReplyToMessageId: uniqueId // Pass the incoming message ID for threading
+            });
+        } else {
+            // Sender lead - just log for visibility in Unibox
+            // Create a general email log entry (no campaign association)
+            await prisma.emailLog.create({
+                data: {
+                    leadId: null, // No campaign lead association
+                    campaignId: null,
+                    emailAccountId: account.id,
+                    type: 'REPLIED',
+                    messageId: uniqueId,
+                    subject: subjectHeader || 'No Subject',
+                    bodySnippet: `[Sender Lead] ${parsed.text ? parsed.text.substring(0, 180) : 'No content'}`,
+                    sentAt: new Date()
+                }
             });
         }
 
-        // Log Reply
-        await prisma.emailLog.create({
-            data: {
-                leadId: lead.id,
-                campaignId: lead.campaignId,
-                emailAccountId: account.id,
-                type: 'REPLIED',
-                messageId: uniqueId,
-                subject: subjectHeader || 'No Subject',
-                bodySnippet: parsed.text ? parsed.text.substring(0, 200) : 'No content',
-                sentAt: new Date()
-            }
-        });
-
         processedCount++;
-
-        // Reply Guy
-        await processIncomingEmailReply({
-            leadId: lead.id,
-            workspaceId: account.workspaceId,
-            emailBody: parsed.text || '',
-            emailSubject: subjectHeader || '',
-            senderName: fromEmail
-        });
     }
 
     if (processedCount > 0 || skippedCount > 0) {

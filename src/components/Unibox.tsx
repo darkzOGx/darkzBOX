@@ -5,6 +5,7 @@ import { Search, Mail, Phone, MoreHorizontal, Reply, Trash2, CheckCircle2, User,
 import { cn } from "@/lib/utils";
 import { sendReply, getThreadMessages, deleteLead, updateLeadStatus, triggerSync, saveTemplate, getTemplates, markLeadAsRead, markLeadAsUnread, deleteTemplate, deleteEmailLog } from "@/actions";
 import { useRouter } from 'next/navigation';
+import { RichTextEditor } from '@/components/RichTextEditor';
 
 // ... imports
 
@@ -301,47 +302,43 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
 
                         {/* Reply Box */}
                         <div className="p-4 bg-white border-t border-slate-200 flex-shrink-0">
-                            <div className="border border-slate-300 rounded-xl overflow-hidden shadow-sm transition-shadow focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-500">
-                                <textarea
-                                    className="w-full p-3 text-sm focus:outline-none min-h-[100px] resize-none text-slate-800 placeholder:text-slate-400"
-                                    placeholder="Type your reply..."
-                                    value={replyBody}
-                                    onChange={(e) => setReplyBody(e.target.value)}
-                                    disabled={isPending}
-                                ></textarea>
-                                <div className="bg-slate-50 px-3 py-2 flex items-center justify-between border-t border-slate-200">
-                                    <div className="flex gap-2">
-                                        <button className="text-slate-400 hover:text-blue-500 transition-colors">
-                                            <PaperclipIcon className="w-4 h-4" />
-                                        </button>
-                                        <button className="text-slate-400 hover:text-yellow-500 transition-colors">
-                                            <SmileIcon className="w-4 h-4" />
-                                        </button>
-                                        {/* Save Template Button */}
-                                        <button
-                                            onClick={handleSaveTemplate}
-                                            className="text-slate-400 hover:text-emerald-600 transition-colors"
-                                            title="Save as Template"
-                                        >
-                                            <Save className="w-4 h-4" />
-                                        </button>
-                                        {/* Mark Unread Button */}
-                                        <button
-                                            onClick={handleMarkUnread}
-                                            className="text-slate-400 hover:text-blue-600 transition-colors"
-                                            title="Mark as Unread"
-                                        >
-                                            <Mail className="w-4 h-4" />
-                                        </button>
-                                    </div>
+                            <RichTextEditor
+                                content={replyBody}
+                                onChange={setReplyBody}
+                                placeholder="Type your reply..."
+                                minHeight="100px"
+                                showVariables={false}
+                            />
+                            <div className="flex items-center justify-between mt-3">
+                                <div className="flex gap-2">
+                                    <button className="text-slate-400 hover:text-blue-500 transition-colors p-1.5 rounded hover:bg-slate-100">
+                                        <PaperclipIcon className="w-4 h-4" />
+                                    </button>
+                                    <button className="text-slate-400 hover:text-yellow-500 transition-colors p-1.5 rounded hover:bg-slate-100">
+                                        <SmileIcon className="w-4 h-4" />
+                                    </button>
                                     <button
-                                        onClick={handleSendReply}
-                                        disabled={isPending || !replyBody.trim()}
-                                        className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 disabled:opacity-50"
+                                        onClick={handleSaveTemplate}
+                                        className="text-slate-400 hover:text-emerald-600 transition-colors p-1.5 rounded hover:bg-slate-100"
+                                        title="Save as Template"
                                     >
-                                        {isPending ? 'Sending...' : 'Send Reply'} <Reply className="w-3 h-3" />
+                                        <Save className="w-4 h-4" />
+                                    </button>
+                                    <button
+                                        onClick={handleMarkUnread}
+                                        className="text-slate-400 hover:text-blue-600 transition-colors p-1.5 rounded hover:bg-slate-100"
+                                        title="Mark as Unread"
+                                    >
+                                        <Mail className="w-4 h-4" />
                                     </button>
                                 </div>
+                                <button
+                                    onClick={handleSendReply}
+                                    disabled={isPending || !replyBody.trim()}
+                                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 disabled:opacity-50"
+                                >
+                                    {isPending ? 'Sending...' : 'Send Reply'} <Reply className="w-3 h-3" />
+                                </button>
                             </div>
                         </div>
                     </>

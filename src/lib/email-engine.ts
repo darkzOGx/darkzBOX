@@ -1,7 +1,16 @@
 import nodemailer from 'nodemailer';
 import { EmailAccount } from '@prisma/client';
 
-export async function sendEmailViaAccount(account: EmailAccount, email: { to: string, subject: string, html: string }): Promise<string> {
+interface EmailOptions {
+    to: string;
+    subject: string;
+    html: string;
+    // Threading headers for replies
+    inReplyTo?: string;
+    references?: string;
+}
+
+export async function sendEmailViaAccount(account: EmailAccount, email: EmailOptions): Promise<string> {
     let transportConfig: any = {
         host: account.smtpHost,
         port: account.smtpPort,
@@ -28,12 +37,22 @@ export async function sendEmailViaAccount(account: EmailAccount, email: { to: st
 
     const transporter = nodemailer.createTransport(transportConfig);
 
-    const info = await transporter.sendMail({
+    // Build mail options with threading support
+    const mailOptions: any = {
         from: `"${account.name || account.email}" <${account.email}>`,
         to: email.to,
         subject: email.subject,
         html: email.html,
-    });
+    };
+
+    // Add threading headers if replying to an existing message
+    if (email.inReplyTo) {
+        mailOptions.inReplyTo = email.inReplyTo;
+        mailOptions.references = email.references || email.inReplyTo;
+        console.log(`[SMTP] Replying to thread: ${email.inReplyTo}`);
+    }
+
+    const info = await transporter.sendMail(mailOptions);
 
     console.log(`[SMTP] Sent email from ${account.email} to ${email.to}. MessageID: ${info.messageId}`);
     return info.messageId;

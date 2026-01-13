@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Bot, Save, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { RichTextEditor } from "@/components/RichTextEditor";
 
 interface ReplyGuyConfigProps {
     initialConfig: {
@@ -17,14 +18,22 @@ interface ReplyGuyConfigProps {
 export function ReplyGuyForm({ initialConfig, workspaceId, onSave }: ReplyGuyConfigProps) {
     const [isSaving, setIsSaving] = useState(false);
     const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle');
+    const [businessContext, setBusinessContext] = useState(initialConfig?.businessContext || '');
+    const [customPrompt, setCustomPrompt] = useState(initialConfig?.customPrompt || 'You are a helpful and professional assistant.');
 
-    async function handleSubmit(formData: FormData) {
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
         setIsSaving(true);
         setStatus('idle');
+
         try {
+            const formData = new FormData(e.currentTarget);
+            formData.set('businessContext', businessContext);
+            formData.set('customPrompt', customPrompt);
+
             await onSave(formData);
             setStatus('success');
-            setTimeout(() => setStatus('idle'), 3000); // Clear success after 3s
+            setTimeout(() => setStatus('idle'), 3000);
         } catch (error) {
             console.error(error);
             setStatus('error');
@@ -34,7 +43,7 @@ export function ReplyGuyForm({ initialConfig, workspaceId, onSave }: ReplyGuyCon
     }
 
     return (
-        <form action={handleSubmit} className="p-8 space-y-8">
+        <form onSubmit={handleSubmit} className="p-8 space-y-8">
             <input type="hidden" name="workspaceId" value={workspaceId} />
 
             {/* Enable Toggle */}
@@ -73,12 +82,12 @@ export function ReplyGuyForm({ initialConfig, workspaceId, onSave }: ReplyGuyCon
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-700">Business Context</label>
                 <p className="text-xs text-slate-500">Describe your company, product, and value proposition. The AI uses this to generate relevant replies.</p>
-                <textarea
-                    name="businessContext"
-                    rows={4}
-                    defaultValue={initialConfig?.businessContext || ''}
+                <RichTextEditor
+                    content={businessContext}
+                    onChange={setBusinessContext}
                     placeholder="We are Acme Corp, selling widgets..."
-                    className="w-full p-4 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-sm"
+                    minHeight="120px"
+                    showVariables={false}
                 />
             </div>
 
@@ -86,11 +95,12 @@ export function ReplyGuyForm({ initialConfig, workspaceId, onSave }: ReplyGuyCon
             <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-700">Custom System Instructions</label>
                 <p className="text-xs text-slate-500">Specific instructions for tone, style, or constraints.</p>
-                <textarea
-                    name="customPrompt"
-                    rows={3}
-                    defaultValue={initialConfig?.customPrompt || 'You are a helpful and professional assistant.'}
-                    className="w-full p-4 border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 text-sm font-mono bg-slate-50"
+                <RichTextEditor
+                    content={customPrompt}
+                    onChange={setCustomPrompt}
+                    placeholder="You are a helpful and professional assistant."
+                    minHeight="100px"
+                    showVariables={false}
                 />
             </div>
 

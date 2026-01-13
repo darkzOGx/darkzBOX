@@ -386,11 +386,28 @@ export async function deleteEmailAccount(id: string) {
     return { success: true }
 }
 
+interface VariantInput {
+    id?: string;
+    name: string;
+    subject?: string;
+    body: string;
+    weight: number;
+}
+
+interface StepInput {
+    order: number;
+    subject?: string;
+    body: string;
+    waitDays: number;
+    enableABTest?: boolean;
+    variants?: VariantInput[];
+}
+
 export async function createCampaign(data: {
     name: string;
     schedule: any;
     leads: { email: string; firstName?: string; lastName?: string; companyName?: string }[];
-    steps: { order: number; subject?: string; body: string; waitDays: number }[];
+    steps: StepInput[];
 }) {
     const workspace = await prisma.workspace.findFirst();
     if (!workspace) throw new Error("No workspace found");
@@ -405,16 +422,30 @@ export async function createCampaign(data: {
             }
         });
 
-        if (data.steps.length > 0) {
-            await tx.campaignStep.createMany({
-                data: data.steps.map(step => ({
+        // Create steps with variants
+        for (const step of data.steps) {
+            const createdStep = await tx.campaignStep.create({
+                data: {
                     campaignId: campaign.id,
                     order: step.order,
                     subject: step.subject,
                     body: step.body,
                     waitDays: step.waitDays
-                }))
+                }
             });
+
+            // Create variants if A/B testing is enabled
+            if (step.enableABTest && step.variants && step.variants.length > 0) {
+                await tx.campaignStepVariant.createMany({
+                    data: step.variants.map(variant => ({
+                        stepId: createdStep.id,
+                        name: variant.name,
+                        subject: variant.subject,
+                        body: variant.body,
+                        weight: variant.weight
+                    }))
+                });
+            }
         }
 
         if (data.leads.length > 0) {
@@ -454,6 +485,16 @@ export async function createCampaign(data: {
         await emailQueue.addBulk(jobs);
     }
 
+    // Trigger IMAP sync to check for any existing replies from newly added leads
+    if (createdCampaign && createdCampaign.leads.length > 0) {
+        try {
+            console.log(`[createCampaign] Triggering IMAP sync for ${createdCampaign.leads.length} new leads...`);
+            // Run sync in background (don't await to avoid blocking)
+            syncImap().catch(err => console.error('[createCampaign] IMAP sync error:', err));
+        } catch (err) {
+            console.error('[createCampaign] Failed to trigger IMAP sync:', err);
+        }
+    }
 
     return { success: true };
 }
@@ -461,7 +502,7 @@ export async function createCampaign(data: {
 export async function updateCampaign(id: string, data: {
     name: string;
     schedule: any;
-    steps: { order: number; subject?: string; body: string; waitDays: number }[];
+    steps: StepInput[];
 }) {
     await prisma.$transaction(async (tx) => {
         // Update basic info
@@ -473,19 +514,46 @@ export async function updateCampaign(id: string, data: {
             }
         });
 
-        // Delete existing steps and recreate
+        // Get existing steps to delete their variants first
+        const existingSteps = await tx.campaignStep.findMany({
+            where: { campaignId: id },
+            select: { id: true }
+        });
+
+        // Delete variants for existing steps
+        if (existingSteps.length > 0) {
+            await tx.campaignStepVariant.deleteMany({
+                where: { stepId: { in: existingSteps.map(s => s.id) } }
+            });
+        }
+
+        // Delete existing steps
         await tx.campaignStep.deleteMany({ where: { campaignId: id } });
 
-        if (data.steps.length > 0) {
-            await tx.campaignStep.createMany({
-                data: data.steps.map(step => ({
+        // Create new steps with variants
+        for (const step of data.steps) {
+            const createdStep = await tx.campaignStep.create({
+                data: {
                     campaignId: id,
                     order: step.order,
                     subject: step.subject,
                     body: step.body,
                     waitDays: step.waitDays
-                }))
+                }
             });
+
+            // Create variants if A/B testing is enabled
+            if (step.enableABTest && step.variants && step.variants.length > 0) {
+                await tx.campaignStepVariant.createMany({
+                    data: step.variants.map(variant => ({
+                        stepId: createdStep.id,
+                        name: variant.name,
+                        subject: variant.subject,
+                        body: variant.body,
+                        weight: variant.weight
+                    }))
+                });
+            }
         }
     });
 
@@ -496,7 +564,14 @@ export async function getCampaign(id: string) {
     const campaign = await prisma.campaign.findUnique({
         where: { id },
         include: {
-            steps: { orderBy: { order: 'asc' } },
+            steps: {
+                orderBy: { order: 'asc' },
+                include: {
+                    variants: {
+                        orderBy: { name: 'asc' }
+                    }
+                }
+            },
             leads: true
         }
     });
@@ -505,10 +580,10 @@ export async function getCampaign(id: string) {
 
 import { sendEmailViaAccount } from '@/lib/email-engine';
 
-export async function sendReply(leadId: string, body: string) {
+export async function sendReply(leadId: string, body: string, threadingInfo?: { inReplyTo?: string; subject?: string }) {
     const lead = await prisma.lead.findUnique({
         where: { id: leadId },
-        include: { assignedAccount: true }
+        include: { assignedAccount: true, logs: { orderBy: { sentAt: 'desc' }, take: 10 } }
     });
     if (!lead) throw new Error("Lead not found");
 
@@ -516,30 +591,54 @@ export async function sendReply(leadId: string, body: string) {
     const emailAccount = lead.assignedAccount || await prisma.emailAccount.findFirst();
     if (!emailAccount) throw new Error("No email account available");
 
-    // Send the actual email
-    // TODO: threading references (In-Reply-To) if available would be better
+    // Find the most recent message to reply to (for threading)
+    let inReplyTo = threadingInfo?.inReplyTo;
+    let replySubject = threadingInfo?.subject || 'Re: Quick Question';
+
+    // If no explicit inReplyTo, find the last message in the thread
+    if (!inReplyTo && lead.logs.length > 0) {
+        // Look for the most recent REPLIED message (incoming) or SENT message with a messageId
+        const lastMessage = lead.logs.find(log => log.messageId && (log.type === 'REPLIED' || log.type === 'SENT'));
+        if (lastMessage) {
+            inReplyTo = lastMessage.messageId;
+            // Use the original subject with Re: prefix if not already there
+            if (lastMessage.subject) {
+                replySubject = lastMessage.subject.startsWith('Re:') ? lastMessage.subject : `Re: ${lastMessage.subject}`;
+            }
+        }
+    }
+
+    // Build references chain from all messages in this thread
+    const references = lead.logs
+        .filter(log => log.messageId)
+        .map(log => log.messageId)
+        .filter(Boolean)
+        .join(' ');
+
     // 1. Create Log Entry First (to get ID for tracking)
     const log = await prisma.emailLog.create({
         data: {
             leadId,
             emailAccountId: emailAccount.id,
             type: 'SENT',
-            subject: 'Re: Quick Question', // Placeholder
+            subject: replySubject,
             bodySnippet: body.substring(0, 100),
             sentAt: new Date()
         }
     });
 
     // 2. Inject Tracking
-    const { injectTracking } = await import('@/lib/tracking'); // Dynamic import to avoid server/client issues if any
+    const { injectTracking } = await import('@/lib/tracking');
     const trackedBody = injectTracking(body.replace(/\n/g, '<br/>'), log.id);
 
-    // 3. Send Email
+    // 3. Send Email with threading headers
     try {
         const messageId = await sendEmailViaAccount(emailAccount, {
             to: lead.email,
-            subject: "Re: Quick Question",
-            html: trackedBody
+            subject: replySubject,
+            html: trackedBody,
+            inReplyTo: inReplyTo || undefined,
+            references: references || undefined
         });
 
         // 4. Update Log with correct Message ID
@@ -547,9 +646,10 @@ export async function sendReply(leadId: string, body: string) {
             where: { id: log.id },
             data: { messageId }
         });
+
+        console.log(`[sendReply] Sent threaded reply to ${lead.email}, inReplyTo: ${inReplyTo || 'none'}`);
     } catch (error) {
-        // Mark log as failed? Or delete? For now, we leave it or maybe mark type ERROR if we had it.
-        // Let's delete it so it doesn't look sent.
+        // Delete failed log
         await prisma.emailLog.delete({ where: { id: log.id } });
         throw error;
     }
@@ -582,6 +682,58 @@ export async function toggleCampaignStatus(id: string, currentStatus: string) {
         where: { id },
         data: { status: newStatus }
     });
+
+    // When resuming a campaign (PAUSED/DRAFT → ACTIVE), queue all pending leads
+    if (newStatus === 'ACTIVE') {
+        const campaign = await prisma.campaign.findUnique({
+            where: { id },
+            include: {
+                steps: { orderBy: { order: 'asc' } },
+                leads: {
+                    where: {
+                        status: { in: ['PENDING', 'CONTACTED'] } // Include contacted for next steps
+                    }
+                }
+            }
+        });
+
+        if (campaign && campaign.steps.length > 0) {
+            const jobs: { name: string; data: any; opts: any }[] = [];
+
+            for (const lead of campaign.leads) {
+                // Determine which step to send
+                let targetStep;
+
+                if (lead.status === 'PENDING' || lead.currentStep === 0) {
+                    // Never been contacted, send first step
+                    targetStep = campaign.steps[0];
+                } else {
+                    // Already contacted, check if there's a next step
+                    const nextStepOrder = lead.currentStep + 1;
+                    targetStep = campaign.steps.find(s => s.order === nextStepOrder);
+                }
+
+                if (targetStep) {
+                    jobs.push({
+                        name: `email-job-${lead.id}`,
+                        data: {
+                            leadId: lead.id,
+                            campaignId: id,
+                            stepOrder: targetStep.order
+                        },
+                        opts: {
+                            removeOnComplete: true
+                        }
+                    });
+                }
+            }
+
+            if (jobs.length > 0) {
+                await emailQueue.addBulk(jobs);
+                console.log(`[toggleCampaignStatus] Campaign ${id} resumed: queued ${jobs.length} emails`);
+            }
+        }
+    }
 
     return { success: true, status: newStatus };
 }

@@ -36,20 +36,58 @@ export async function getUnassignedLeads(page = 1, limit = 50, search = '') {
 }
 
 export async function addLeadsToCampaign(campaignId: string, leadIds: string[]) {
-    // In a real app we might want to check if they are already in another campaign and warn?
-    // Or just update their campaignId. 
-    // Schema defines a unique constraint on [campaignId, email]?? No, just lead ID.
-    // Actually, lead has `campaignId`. Moving a lead to a new campaign?
-    // Or are we creating COPIES? Usually in these tools, a Lead is unique entity.
-    // If we add to campaign, we assign them.
+    const { Queue } = await import('bullmq');
+    const emailQueue = new Queue('campaign-email-queue', { connection: { host: 'localhost', port: 6379 } });
 
+    // Update leads: assign to campaign, reset status and step
     await prisma.lead.updateMany({
         where: { id: { in: leadIds } },
-        data: { campaignId }
+        data: {
+            campaignId,
+            status: 'PENDING',
+            currentStep: 0
+        }
     });
 
-    // Also we should probably create initial campaign steps for them if the campaign is active?
-    // For now, just assigning them is the request.
+    // Get the campaign's first step
+    const campaign = await prisma.campaign.findUnique({
+        where: { id: campaignId },
+        include: {
+            steps: {
+                orderBy: { order: 'asc' },
+                take: 1
+            }
+        }
+    });
+
+    // Queue emails for all added leads if campaign has steps
+    if (campaign && campaign.steps.length > 0) {
+        const firstStep = campaign.steps[0];
+        const jobs = leadIds.map(leadId => ({
+            name: `email-job-${leadId}`,
+            data: {
+                leadId,
+                campaignId,
+                stepOrder: firstStep.order
+            },
+            opts: {
+                removeOnComplete: true
+            }
+        }));
+
+        await emailQueue.addBulk(jobs);
+        console.log(`[addLeadsToCampaign] Queued ${jobs.length} emails for campaign ${campaignId}`);
+    }
+
+    // Trigger IMAP sync to check for any existing replies from newly added leads
+    try {
+        const { syncUnibox } = await import('../worker/imap-listener');
+        console.log(`[addLeadsToCampaign] Triggering IMAP sync for new leads...`);
+        // Run sync in background (don't await to avoid blocking)
+        syncUnibox().catch(err => console.error('[addLeadsToCampaign] IMAP sync error:', err));
+    } catch (err) {
+        console.error('[addLeadsToCampaign] Failed to trigger IMAP sync:', err);
+    }
 
     return { success: true };
 }

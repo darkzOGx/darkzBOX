@@ -104,11 +104,29 @@ model CampaignStep {
   campaignId  String
   order       Int      // 1, 2, 3...
   waitDays    Int      @default(0) // Wait time before this step
-  
+
   subject     String?  // Null for follow-ups (replies to previous thread)
-  body        String   // Supports Spintax
-  
+  body        String   // Supports Spintax and HTML rich text
+
+  // A/B Testing: if variants exist, use them instead of subject/body
+  variants    CampaignStepVariant[]
+
   campaign    Campaign @relation(fields: [campaignId], references: [id])
+}
+
+// A/B Test Variants for campaign steps
+model CampaignStepVariant {
+  id            String   @id @default(cuid())
+  stepId        String
+  name          String   @default("A") // A, B, C, etc.
+  subject       String?  // Variant subject line
+  body          String   // Variant body content (HTML rich text)
+  weight        Int      @default(50) // Distribution weight (percentage)
+
+  step          CampaignStep @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  sentLogs      EmailLog[]   @relation("VariantLogs")
+
+  createdAt     DateTime @default(now())
 }
 
 model Lead {
@@ -145,16 +163,20 @@ model EmailLog {
   leadId         String?
   emailAccountId String
   campaignId     String?  // For easier analytics
-  
+
   type           String   // SENT, OPENED, REPLIED, BOUNCED
   messageId      String?  // Message-ID header for threading
   threadId       String?  // Gmail Thread ID or computed thread key
-  
+
   subject        String?
   bodySnippet    String?
-  
+
+  // A/B Testing: track which variant was sent
+  variantId      String?
+  variant        CampaignStepVariant? @relation("VariantLogs", fields: [variantId], references: [id])
+
   sentAt         DateTime @default(now())
-  
+
   lead           Lead?         @relation(fields: [leadId], references: [id])
   emailAccount   EmailAccount  @relation(fields: [emailAccountId], references: [id])
   campaign       Campaign?     @relation(fields: [campaignId], references: [id])
@@ -182,4 +204,121 @@ model Template {
   updatedAt   DateTime  @updatedAt
 
   workspace   Workspace @relation(fields: [workspaceId], references: [id])
+}
+
+// Blocklist for preventing emails to specific addresses
+model BlockedEmail {
+  id          String    @id @default(cuid())
+  workspaceId String
+  email       String
+  firstName   String?
+  lastName    String?
+  reason      String?   // Optional reason for blocking
+  createdAt   DateTime  @default(now())
+
+  @@unique([workspaceId, email])
+  @@index([email])
+}
+
+// ============================================
+// SENDER FEATURE - Standalone SMTP Email Sender
+// ============================================
+
+// SMTP Configuration for Sender
+model SenderConfig {
+  id            String    @id @default(cuid())
+  workspaceId   String    @unique
+  smtpHost      String
+  smtpPort      Int       @default(587)
+  smtpUser      String
+  smtpPass      String
+  fromName      String?
+  fromEmail     String
+  useTls        Boolean   @default(true)
+  dailyLimit    Int       @default(500)
+  delayBetween  Int       @default(5) // seconds between emails
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Email templates for Sender
+model SenderTemplate {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+  subject     String
+  body        String    // HTML body with variable placeholders
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  campaigns   SenderCampaign[]
+}
+
+// Lead groups for Sender
+model SenderLeadGroup {
+  id          String    @id @default(cuid())
+  workspaceId String
+  name        String
+
+  leads       SenderLead[]
+  campaigns   SenderCampaign[]
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+// Individual leads in a group
+model SenderLead {
+  id          String    @id @default(cuid())
+  groupId     String
+  email       String
+  firstName   String?
+  lastName    String?
+  company     String?
+  customVars  Json?     // Custom variables for template replacement
+
+  group       SenderLeadGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime  @default(now())
+
+  @@unique([groupId, email])
+}
+
+// Sender campaign runs
+model SenderCampaign {
+  id            String    @id @default(cuid())
+  workspaceId   String
+  name          String
+  templateId    String
+  leadGroupId   String
+
+  status        String    @default("PENDING") // PENDING, RUNNING, PAUSED, COMPLETED, FAILED
+  totalLeads    Int       @default(0)
+  sentCount     Int       @default(0)
+  failedCount   Int       @default(0)
+
+  startedAt     DateTime?
+  completedAt   DateTime?
+  lastError     String?
+
+  template      SenderTemplate  @relation(fields: [templateId], references: [id])
+  leadGroup     SenderLeadGroup @relation(fields: [leadGroupId], references: [id])
+  logs          SenderLog[]
+
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+// Logs for sender campaigns
+model SenderLog {
+  id          String    @id @default(cuid())
+  campaignId  String
+  email       String
+  status      String    // SENT, FAILED
+  error       String?
+  sentAt      DateTime  @default(now())
+
+  campaign    SenderCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 }

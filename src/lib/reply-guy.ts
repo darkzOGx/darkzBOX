@@ -16,6 +16,7 @@ interface IncomingEmailContext {
     emailBody: string;
     emailSubject: string;
     senderName: string;
+    inReplyToMessageId?: string; // For threading replies
 }
 
 export async function processIncomingEmailReply(context: IncomingEmailContext) {
@@ -79,9 +80,15 @@ export async function processIncomingEmailReply(context: IncomingEmailContext) {
             include: { campaign: true }
         });
 
+        // Threading info for the reply
+        const threadingInfo = {
+            inReplyTo: context.inReplyToMessageId,
+            subject: context.emailSubject ? `Re: ${context.emailSubject.replace(/^Re:\s*/i, '')}` : undefined
+        };
+
         if (!lead || !lead.campaign || !lead.campaign.schedule) {
             console.log('[ReplyGuy] No campaign/schedule found for lead. Sending immediately.');
-            await sendReply(context.leadId, aiResponse);
+            await sendReply(context.leadId, aiResponse, threadingInfo);
         } else {
             const schedule = lead.campaign.schedule as any; // Typed as Json in Prisma
             // Assuming checkSendingWindow returns boolean
@@ -93,7 +100,7 @@ export async function processIncomingEmailReply(context: IncomingEmailContext) {
             const isWindowOpen = isInSendingWindow(schedule);
 
             if (isWindowOpen) {
-                await sendReply(context.leadId, aiResponse);
+                await sendReply(context.leadId, aiResponse, threadingInfo);
 
                 // Log AI_REPLY type
                 // valid sendReply creates 'SENT'. We might want to update it to 'AI_REPLY' or create a specific log.
@@ -124,7 +131,8 @@ export async function processIncomingEmailReply(context: IncomingEmailContext) {
                 await replyGuyQueue.add('delayed-ai-reply', {
                     leadId: context.leadId,
                     aiResponse,
-                    workspaceId: context.workspaceId
+                    workspaceId: context.workspaceId,
+                    threadingInfo // Pass threading info for delayed replies
                 }, {
                     delay: 5 * 60 * 1000, // 5 minute delay
                     removeOnComplete: true
