@@ -20,14 +20,24 @@ if [ ! -f .env ]; then
 fi
 
 # 3. Build and Start Containers
-echo "whale Building and Starting Containers..."
-docker-compose -f docker-compose.prod.yml up -d --build
+# 3. Build and Start Containers
+echo "🐳 Building and Starting Containers..."
+
+# Check for docker compose v2
+if docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE_CMD="docker compose"
+else
+    DOCKER_COMPOSE_CMD="docker-compose"
+fi
+echo "Using command: $DOCKER_COMPOSE_CMD"
+
+$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml up -d --build
 
 # 4. Run Migrations
 echo "🗄️ Running Database Migrations..."
 # Sleep to give DB time to start if it's new
 sleep 5
-docker-compose -f docker-compose.prod.yml exec app npx prisma db push
+$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml exec app npx prisma db push
 
 echo "✅ Deployment Complete!"
 echo "Your app should be live at https://$(grep DOMAIN_NAME .env | cut -d '=' -f2)"

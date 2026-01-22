@@ -1,9 +1,10 @@
 FROM node:20-alpine AS base
+RUN apk add --no-cache libc6-compat openssl
 
 # Install dependencies only when needed
 FROM base AS deps
 # Check https://github.com/nodejs/docker-node/tree/b4117f9333da4138b03a546ec926ef50a31506c3#nodealpine to understand why libc6-compat is needed.
-RUN apk add --no-cache libc6-compat openssl
+# RUN apk add --no-cache libc6-compat openssl
 WORKDIR /app
 
 # Install dependencies based on the preferred package manager
@@ -13,7 +14,7 @@ RUN npm ci
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
-RUN apk add --no-cache openssl
+WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
