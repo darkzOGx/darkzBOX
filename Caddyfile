@@ -1,3 +1,4 @@
 {$DOMAIN_NAME} {
+    tls internal
     reverse_proxy app:3000
 }
