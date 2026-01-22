@@ -21,8 +21,8 @@ export function EmailVolumeChart({ data }: EmailVolumeChartProps) {
     return (
         <ResponsiveContainer width="100%" height="100%">
             <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                <XAxis 
-                    dataKey="date" 
+                <XAxis
+                    dataKey="date"
                     stroke="#94a3b8"
                     fontSize={12}
                     tickLine={false}
@@ -40,7 +40,7 @@ export function EmailVolumeChart({ data }: EmailVolumeChartProps) {
                     axisLine={false}
                     tickFormatter={(value) => `${value}`}
                 />
-                <Tooltip 
+                <Tooltip
                     cursor={{ fill: '#f1f5f9' }}
                     content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
@@ -48,7 +48,7 @@ export function EmailVolumeChart({ data }: EmailVolumeChartProps) {
                                 <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
                                     <div className="flex flex-col gap-1">
                                         <span className="text-xs font-medium text-slate-500">
-                                            {new Date(label).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                                            {label ? new Date(label).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : ''}
                                         </span>
                                         <span className="text-lg font-bold text-slate-900">
                                             {payload[0].value} <span className="text-xs font-normal text-slate-500">emails</span>
@@ -60,9 +60,9 @@ export function EmailVolumeChart({ data }: EmailVolumeChartProps) {
                         return null
                     }}
                 />
-                <Bar 
-                    dataKey="sent" 
-                    fill="#3b82f6" 
+                <Bar
+                    dataKey="sent"
+                    fill="#3b82f6"
                     radius={[4, 4, 0, 0]}
                     maxBarSize={50}
                 />
