@@ -15,6 +15,7 @@ import {
 } from "recharts";
 import { ArrowUpRight, ArrowDownRight, Mail, BookOpen, MessageSquare, AlertOctagon } from "lucide-react";
 import { DashboardStatModal } from "@/components/DashboardStatModal";
+import { cn } from "@/lib/utils";
 
 interface AnalyticsClientProps {
     globalStats: {
@@ -60,7 +61,7 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
     const getTrend = (changeStr: string = "+0%") => changeStr.startsWith('-') ? 'down' : 'up';
 
     const StatCard = ({ title, value, icon: Icon, color, subValue, change, onClick }: any) => (
-        <div 
+        <div
             onClick={onClick}
             className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98]"
         >
@@ -164,9 +165,9 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                 />
             </div>
 
-            <DashboardStatModal 
-                stat={selectedStat} 
-                onClose={() => setSelectedStat(null)} 
+            <DashboardStatModal
+                stat={selectedStat}
+                onClose={() => setSelectedStat(null)}
             />
 
             {/* Charts Section */}
@@ -260,8 +261,8 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                                         </td>
                                         <td className="px-3 py-3 text-right">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${(camp.replied / (camp.sent || 1)) > 0.1
-                                                    ? 'bg-emerald-100 text-emerald-800'
-                                                    : 'bg-slate-100 text-slate-600'
+                                                ? 'bg-emerald-100 text-emerald-800'
+                                                : 'bg-slate-100 text-slate-600'
                                                 }`}>
                                                 {Math.round((camp.replied / (camp.sent || 1)) * 100)}%
                                             </span>

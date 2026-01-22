@@ -49,6 +49,7 @@ export function RichTextEditor({
     const [htmlSource, setHtmlSource] = useState(content);
 
     const editor = useEditor({
+        immediatelyRender: false,
         extensions: [
             StarterKit.configure({
                 heading: {
