@@ -119,7 +119,7 @@ export async function getDashboardStats() {
                 lt: thirtyDaysAgo
             }
         },
-        select: { type: true }
+        select: { type: true, leadId: true }
     });
 
     const pastSent = pastPeriodLogs.filter(l => l.type === 'SENT').length;
