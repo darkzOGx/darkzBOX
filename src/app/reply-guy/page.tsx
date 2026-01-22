@@ -1,6 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { Bot } from "lucide-react";
+
+export const dynamic = 'force-dynamic';
 import { ReplyGuyForm } from "./ReplyGuyForm";
 
 const prisma = new PrismaClient();

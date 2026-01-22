@@ -1,5 +1,7 @@
 import { Plus, Trash2, CheckCircle2, AlertCircle, Server, Mail, Settings } from "lucide-react";
 import { getEmailAccounts, deleteEmailAccount } from "@/actions";
+
+export const dynamic = 'force-dynamic';
 import { revalidatePath } from "next/cache";
 import { EmailAccountForm } from "@/components/EmailAccountForm";
 import { SenderConfigForm } from "@/components/SenderConfigForm";
