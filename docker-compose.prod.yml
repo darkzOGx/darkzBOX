@@ -45,6 +45,8 @@ services:
   caddy:
     image: caddy:2-alpine
     restart: always
+    environment:
+      - DOMAIN_NAME=${DOMAIN_NAME}
     ports:
       - "80:80"
       - "443:443"
