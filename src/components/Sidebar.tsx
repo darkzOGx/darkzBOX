@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { LayoutDashboard, Mail, Send, Settings, Users, BarChart3, Bot, Zap, ShieldBan, Radio, Globe } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { LayoutDashboard, Mail, Send, Settings, Users, BarChart3, Bot, Zap, ShieldBan, Radio, Globe, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navigation = [
@@ -20,6 +21,13 @@ const navigation = [
 
 export function Sidebar() {
     const pathname = usePathname();
+    const router = useRouter();
+
+    const handleLogout = async () => {
+        await signOut({ redirect: false });
+        router.push("/login");
+        router.refresh();
+    };
 
     return (
         <div className="flex h-screen w-64 flex-col fixed left-0 top-0 bg-[#0f172a] text-white border-r border-gray-800">
@@ -71,6 +79,17 @@ export function Sidebar() {
                     );
                 })}
             </nav>
+
+            {/* Logout Button */}
+            <div className="border-t border-gray-800 p-3">
+                <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-400 hover:bg-gray-800 hover:text-white transition-colors"
+                >
+                    <LogOut className="mr-3 h-5 w-5 flex-shrink-0" />
+                    Sign Out
+                </button>
+            </div>
         </div>
     );
 }

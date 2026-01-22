@@ -1,11 +1,29 @@
 import NextAuth, { NextAuthOptions } from "next-auth";
 import GoogleProvider from "next-auth/providers/google";
+import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 
 export const authOptions: NextAuthOptions = {
     // @ts-ignore - trustHost is valid in NextAuth v4 but generic types might miss it
     trustHost: true,
     providers: [
+        CredentialsProvider({
+            name: "Credentials",
+            credentials: {
+                username: { label: "Username", type: "text" },
+                password: { label: "Password", type: "password" }
+            },
+            async authorize(credentials) {
+                if (credentials?.username === "admin" && credentials?.password === "b2ab1") {
+                    return {
+                        id: "admin",
+                        name: "Admin",
+                        email: "admin@darkzbox.com",
+                    };
+                }
+                return null;
+            }
+        }),
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID!,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
@@ -19,7 +37,24 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
+        async jwt({ token, user }) {
+            if (user) {
+                token.id = user.id;
+            }
+            return token;
+        },
+        async session({ session, token }) {
+            if (session.user) {
+                session.user.id = token.id as string;
+            }
+            return session;
+        },
         async signIn({ user, account, profile }) {
+            // Allow credentials provider to sign in
+            if (account?.provider === "credentials") {
+                return true;
+            }
+            
             if (account?.provider === "google") {
                 // Intercept the sign-in to create/update the EmailAccount
                 // We are using NextAuth purely as a "Connect Account" mechanism here
@@ -99,11 +134,22 @@ export const authOptions: NextAuthOptions = {
             return true;
         },
         async redirect({ url, baseUrl }) {
-            return baseUrl + "/settings"; // Redirect back to settings after connection
+            // If signing in with credentials, go to dashboard
+            if (url === baseUrl || url === baseUrl + "/login") {
+                return baseUrl + "/";
+            }
+            // For Google OAuth, redirect to settings
+            if (url.includes("/api/auth/callback/google")) {
+                return baseUrl + "/settings";
+            }
+            return url.startsWith(baseUrl) ? url : baseUrl + "/";
         }
     },
     pages: {
-        signIn: '/settings', // Error page
-        error: '/settings',
-    }
+        signIn: '/login',
+        error: '/login',
+    },
+    session: {
+        strategy: "jwt",
+    },
 };

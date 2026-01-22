@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Sidebar } from "@/components/Sidebar";
+import { LayoutWrapper } from "@/components/LayoutWrapper";
 import { Inter } from "next/font/google";
 import "./globals.css";
 
@@ -18,12 +18,7 @@ export default function RootLayout({
     return (
         <html lang="en" suppressHydrationWarning>
             <body className={`${inter.className} bg-gray-50 text-slate-900 antialiased`} suppressHydrationWarning>
-                <div className="flex min-h-screen">
-                    <Sidebar />
-                    <main className="flex-1 pl-64 transition-all duration-300">
-                        {children}
-                    </main>
-                </div>
+                <LayoutWrapper>{children}</LayoutWrapper>
             </body>
         </html>
     );
