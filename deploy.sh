@@ -25,6 +25,9 @@ echo "🐳 Building and Starting Containers..."
 
 # WORKAROUND: Force remove old containers to avoid python docker-compose crash (KeyError: ContainerConfig)
 echo "🧹 Cleaning up old containers to prevent compatibility errors..."
+# Find and remove any container with 'darkzbox' in the name (case insensitive usually, but docker filters are lowercase)
+docker ps -a --filter "name=darkzbox" -q | xargs -r docker rm -f
+# Also try standard compose names just in case
 docker rm -f darkzbox_app_1 darkzbox_postgres_1 darkzbox_redis_1 darkzbox_caddy_1 2>/dev/null || true
 
 # Check for docker compose v2
