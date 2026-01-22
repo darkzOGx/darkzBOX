@@ -5,6 +5,8 @@ import { DashboardStats } from "@/components/DashboardStats";
 import { EmailVolumeChart } from "@/components/EmailVolumeChart";
 import { RecentActivity } from "@/components/RecentActivity";
 
+export const dynamic = 'force-dynamic';
+
 export default async function Home() {
     const data = await getDashboardStats();
 
