@@ -45,7 +45,7 @@ echo "🗄️ Running Database Migrations..."
 # Sleep to give DB time to start if it's new
 sleep 5
 # Pin Prisma version to 5.22.0 to match project dependency and avoid v7 breaking changes
-$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml exec app npx prisma@5.22.0 db push
+$DOCKER_COMPOSE_CMD -f docker-compose.prod.yml exec app npx prisma@5.22.0 db push --skip-generate
 
 echo "✅ Deployment Complete!"
 echo "Your app should be live at https://$(grep DOMAIN_NAME .env | cut -d '=' -f2)"
