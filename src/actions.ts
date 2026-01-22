@@ -4,7 +4,12 @@ import { prisma } from '@/lib/prisma';
 import { Queue } from 'bullmq';
 import { syncUnibox as syncImap } from './worker/imap-listener';
 
-const emailQueue = new Queue('campaign-email-queue', { connection: { host: 'localhost', port: 6379 } });
+const emailQueue = new Queue('campaign-email-queue', {
+    connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379')
+    }
+});
 
 export async function addLead(data: { email: string, firstName?: string, lastName?: string, companyName?: string, campaignId?: string }) {
     let targetCampaignId = data.campaignId;

@@ -202,7 +202,7 @@ export const campaignWorker = new Worker(QUEUE_NAME, async (job: Job) => {
 
 }, {
     connection: {
-        host: 'localhost',
-        port: 6379
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6379')
     }
 });

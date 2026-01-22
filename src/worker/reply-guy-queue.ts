@@ -3,7 +3,10 @@ import { prisma } from '../lib/prisma';
 import { sendReply } from '@/actions';
 
 const QUEUE_NAME = 'reply-guy-queue';
-const connection = { host: 'localhost', port: 6379 };
+const connection = {
+    host: process.env.REDIS_HOST || 'localhost',
+    port: parseInt(process.env.REDIS_PORT || '6379')
+};
 
 // Export queue for scheduling from reply-guy.ts
 export const replyGuyQueue = new Queue(QUEUE_NAME, { connection });

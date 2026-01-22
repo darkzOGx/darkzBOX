@@ -37,7 +37,12 @@ export async function getUnassignedLeads(page = 1, limit = 50, search = '') {
 
 export async function addLeadsToCampaign(campaignId: string, leadIds: string[]) {
     const { Queue } = await import('bullmq');
-    const emailQueue = new Queue('campaign-email-queue', { connection: { host: 'localhost', port: 6379 } });
+    const emailQueue = new Queue('campaign-email-queue', {
+        connection: {
+            host: process.env.REDIS_HOST || 'localhost',
+            port: parseInt(process.env.REDIS_PORT || '6379')
+        }
+    });
 
     // Update leads: assign to campaign, reset status and step
     await prisma.lead.updateMany({
