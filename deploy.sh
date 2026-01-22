@@ -23,6 +23,10 @@ fi
 # 3. Build and Start Containers
 echo "🐳 Building and Starting Containers..."
 
+# WORKAROUND: Force remove old containers to avoid python docker-compose crash (KeyError: ContainerConfig)
+echo "🧹 Cleaning up old containers to prevent compatibility errors..."
+docker rm -f darkzbox_app_1 darkzbox_postgres_1 darkzbox_redis_1 darkzbox_caddy_1 2>/dev/null || true
+
 # Check for docker compose v2
 if docker compose version >/dev/null 2>&1; then
     DOCKER_COMPOSE_CMD="docker compose"
