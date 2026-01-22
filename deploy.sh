@@ -1,0 +1,33 @@
+#!/bin/bash
+
+# Deployment Script for DarkzBOX
+
+echo "🚀 Starting Deployment..."
+
+# 1. Pull latest changes
+echo "📥 Pulling latest code..."
+git pull origin main
+
+# 2. Check for .env file
+if [ ! -f .env ]; then
+    echo "❌ Error: .env file not found!"
+    echo "Please create a .env file with :"
+    echo "DOMAIN_NAME=yourdomain.com"
+    echo "NEXTAUTH_SECRET=..."
+    echo "GOOGLE_CLIENT_ID=..."
+    echo "GOOGLE_CLIENT_SECRET=..."
+    exit 1
+fi
+
+# 3. Build and Start Containers
+echo "whale Building and Starting Containers..."
+docker-compose -f docker-compose.prod.yml up -d --build
+
+# 4. Run Migrations
+echo "🗄️ Running Database Migrations..."
+# Sleep to give DB time to start if it's new
+sleep 5
+docker-compose -f docker-compose.prod.yml exec app npx prisma db push
+
+echo "✅ Deployment Complete!"
+echo "Your app should be live at https://$(grep DOMAIN_NAME .env | cut -d '=' -f2)"
