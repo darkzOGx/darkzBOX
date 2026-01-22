@@ -600,7 +600,7 @@ export async function sendReply(leadId: string, body: string, threadingInfo?: { 
         // Look for the most recent REPLIED message (incoming) or SENT message with a messageId
         const lastMessage = lead.logs.find(log => log.messageId && (log.type === 'REPLIED' || log.type === 'SENT'));
         if (lastMessage) {
-            inReplyTo = lastMessage.messageId;
+            inReplyTo = lastMessage.messageId || undefined;
             // Use the original subject with Re: prefix if not already there
             if (lastMessage.subject) {
                 replySubject = lastMessage.subject.startsWith('Re:') ? lastMessage.subject : `Re: ${lastMessage.subject}`;
