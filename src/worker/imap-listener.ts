@@ -25,12 +25,52 @@ function buildXoauth2Token(user: string, accessToken: string) {
 // Helper: Normalize for Gmail (remove dots)
 function normalizeEmail(email: string): string {
     const [local, domain] = email.split('@');
-    if (!domain) return email.toLowerCase().trim();
+    if (!domain) return email ? email.toLowerCase().trim() : '';
     const cleanDomain = domain.toLowerCase().trim();
     if (cleanDomain.includes('gmail.com') || cleanDomain.includes('googlemail.com')) {
         return `${local.replace(/\./g, '')}@${cleanDomain}`;
     }
     return `${local}@${cleanDomain}`;
+}
+
+async function getSentFolderName(connection: any): Promise<string | null> {
+    try {
+        const boxes = await connection.getBoxes();
+
+        // Recursive search for a box with the \\Sent attribute
+        const findSentBox = (boxList: any, path: string = ''): string | null => {
+            for (const key of Object.keys(boxList)) {
+                const box = boxList[key];
+                const fullPath = path ? `${path}${box.delimiter}${key}` : key;
+
+                // Check attributes
+                if (box.attribs && box.attribs.some((a: string) => a.toUpperCase() === '\\SENT')) {
+                    return fullPath;
+                }
+
+                // Common names fallback check
+                if (key.toUpperCase() === 'SENT' || key.toUpperCase() === 'SENT ITEMS' || key.toUpperCase() === 'SENT MESSAGES') {
+                    return fullPath;
+                }
+
+                // Gmail specifically often puts it under [Gmail]/Sent Mail
+                if (path === '[Gmail]' && key === 'Sent Mail') {
+                    return fullPath;
+                }
+
+                if (box.children) {
+                    const foundOriginal = findSentBox(box.children, fullPath);
+                    if (foundOriginal) return foundOriginal;
+                }
+            }
+            return null;
+        };
+
+        return findSentBox(boxes);
+    } catch (e) {
+        console.error("Error finding sent box:", e);
+        return 'Sent'; // Default fallback
+    }
 }
 
 async function checkImapForAccount(account: any) {
@@ -49,36 +89,27 @@ async function checkImapForAccount(account: any) {
         imapConfig.password = account.imapPass;
     }
 
-    const connection = await imap.connect({ imap: imapConfig });
-    await connection.openBox('INBOX');
-
-    // Only fetch UNSEEN emails from last 7 days
-    const sinceDate = DateTime.now().minus({ days: 7 }).toFormat('dd-LLL-yyyy');
-    const searchCriteria = [['SINCE', sinceDate], 'UNSEEN'];
-    const fetchOptions = { bodies: ['HEADER', 'TEXT'], markSeen: false };
-
-    let messages = await connection.search(searchCriteria, fetchOptions);
-
-    if (messages.length === 0) {
-        connection.end();
+    let connection;
+    try {
+        connection = await imap.connect({ imap: imapConfig });
+    } catch (e) {
+        console.error(`Could not connect to IMAP for ${account.email}`, e);
         return;
     }
 
-    // OPTIMIZATION: Only check the 10 most recent emails for speed
-    messages = messages.slice(0, 10);
+    // --- PRE-FETCHING DATA (Shared across boxes) ---
 
     // Pre-fetch all leads for fast in-memory matching (Campaign leads)
     const campaignLeads = await prisma.lead.findMany({
         select: { id: true, email: true, status: true, campaignId: true }
     });
 
-    // Pre-fetch all Sender leads as well for Unibox tracking
+    // Pre-fetch all Sender leads
     const senderLeads = await prisma.senderLead.findMany({
         select: { id: true, email: true, groupId: true }
     });
 
-    // Create a Map for O(1) matching using normalized emails
-    // Store both campaign leads and sender leads with a source indicator
+    // Match Map
     type LeadEntry = {
         id: string;
         email: string;
@@ -90,7 +121,6 @@ async function checkImapForAccount(account: any) {
 
     const leadMap = new Map<string, LeadEntry>();
 
-    // Add campaign leads
     for (const l of campaignLeads) {
         leadMap.set(normalizeEmail(l.email), {
             id: l.id,
@@ -101,7 +131,6 @@ async function checkImapForAccount(account: any) {
         });
     }
 
-    // Add sender leads (won't overwrite if campaign lead exists with same email)
     for (const l of senderLeads) {
         const normalized = normalizeEmail(l.email);
         if (!leadMap.has(normalized)) {
@@ -114,122 +143,201 @@ async function checkImapForAccount(account: any) {
         }
     }
 
-    // Pre-fetch ALL existing message IDs to avoid reprocessing
+    // Global processed check (to prevent processing twice if moved between folders)
+    // Fetch REPLIED and SENT logs
     const existingLogs = await prisma.emailLog.findMany({
-        where: { type: 'REPLIED' },
+        where: { OR: [{ type: 'REPLIED' }, { type: 'SENT' }, { type: 'MANUAL_SENT' }] },
         select: { messageId: true }
     });
     const processedMessageIds = new Set(existingLogs.map(log => log.messageId).filter(Boolean));
 
+    // --- SYNC INBOX ---
+    await processBox({
+        connection,
+        boxName: 'INBOX',
+        account,
+        leadMap,
+        processedMessageIds,
+        type: 'INBOX'
+    });
+
+    // --- SYNC SENT ---
+    const sentBoxName = await getSentFolderName(connection);
+    if (sentBoxName) {
+        await processBox({
+            connection,
+            boxName: sentBoxName,
+            account,
+            leadMap,
+            processedMessageIds,
+            type: 'SENT'
+        });
+    } else {
+        console.warn(`Could not find Sent folder for ${account.email}`);
+    }
+
+    connection.end();
+}
+
+type ProcessBoxArgs = {
+    connection: any;
+    boxName: string;
+    account: any;
+    leadMap: Map<string, any>;
+    processedMessageIds: Set<string | null>;
+    type: 'INBOX' | 'SENT';
+};
+
+async function processBox({ connection, boxName, account, leadMap, processedMessageIds, type }: ProcessBoxArgs) {
+    try {
+        await connection.openBox(boxName);
+    } catch (e) {
+        console.warn(`Failed to open box ${boxName}:`, e);
+        return;
+    }
+
+    // Only fetch UNSEEN emails from last 7 days (or ALL if we want to catch Sent items properly, 
+    // but usually 'UNSEEN' works for new items if client marks them seeing or we track strictly by ID)
+    // For Sent items, they might already be SEEN by the client that sent them.
+    // So for SENT box, we might need to look at time-based if UNSEEN returns nothing.
+    // Strategy: For INBOX use UNSEEN. For SENT, use SINCE.
+
+    const sinceDate = DateTime.now().minus({ days: 7 }).toFormat('dd-LLL-yyyy');
+
+    let searchCriteria: any[] = [['SINCE', sinceDate]];
+    if (type === 'INBOX') {
+        searchCriteria.push('UNSEEN');
+    }
+    // For SENT, we don't strictly require UNSEEN because the sender (us) likely 'saw' it when sending.
+
+    const fetchOptions = { bodies: ['HEADER', 'TEXT'], markSeen: false };
+
+    let messages = await connection.search(searchCriteria, fetchOptions);
+
+    if (messages.length === 0) return;
+
+    // LIMIT to 20 to avoid bottlenecks
+    messages = messages.slice(0, 20);
+
     let processedCount = 0;
-    let skippedCount = 0;
 
     for (const msg of messages) {
         const uid = msg.attributes.uid;
 
-        // Parse headers
-        const fromHeader = msg.parts.find((p: any) => p.which === 'HEADER')?.body?.from?.[0];
-        const subjectHeader = msg.parts.find((p: any) => p.which === 'HEADER')?.body?.subject?.[0];
-        const messageIdHeader = msg.parts.find((p: any) => p.which === 'HEADER')?.body?.['message-id']?.[0];
+        // Header Parsing
+        const headerPart = msg.parts.find((p: any) => p.which === 'HEADER');
+        const fromHeader = headerPart?.body?.from?.[0];
+        const toHeader = headerPart?.body?.to?.[0]; // Needed for Sent Logic
+        const subjectHeader = headerPart?.body?.subject?.[0];
+        const messageIdHeader = headerPart?.body?.['message-id']?.[0];
 
-        // Generate a unique ID for this message
+        // Unique ID
         const uniqueId = messageIdHeader || `uid-${account.id}-${uid}`;
 
-        // CRITICAL: Skip if we've already processed this message
         if (processedMessageIds.has(uniqueId)) {
-            skippedCount++;
-            await connection.addFlags(uid, '\\Seen');
+            // If INBOX, mark seen so we don't fetch again
+            if (type === 'INBOX') await connection.addFlags(uid, '\\Seen');
             continue;
         }
 
-        if (!fromHeader) {
-            await connection.addFlags(uid, '\\Seen');
-            continue;
+        // --- MATCHING LOGIC ---
+        // INBOX: We care about WHO SENT it (Is it a Lead?)
+        // SENT: We care about WHO RECEIVED it (Is it a Lead?)
+
+        let targetEmail = '';
+
+        if (type === 'INBOX') {
+            if (!fromHeader) continue;
+            targetEmail = fromHeader.match(/<(.+)>/)?.[1] || fromHeader.replace(/"/g, '');
+        } else {
+            // SENT
+            if (!toHeader) continue;
+            // 'to' header can be multiple list, usually just take the first or check all
+            // For simplicity, grab the first email found
+            targetEmail = toHeader.match(/<(.+)>/)?.[1] || toHeader.replace(/"/g, '');
         }
 
-        let fromEmail = fromHeader.match(/<(.+)>/)?.[1] || fromHeader.replace(/"/g, '');
-        if (!fromEmail) {
-            await connection.addFlags(uid, '\\Seen');
-            continue;
-        }
+        if (!targetEmail) continue;
 
-        const normalizedFrom = normalizeEmail(fromEmail);
-        const lead = leadMap.get(normalizedFrom);
+        const normalizedTarget = normalizeEmail(targetEmail);
+        const lead = leadMap.get(normalizedTarget);
 
         if (!lead) {
-            // Not a lead we care about - mark as seen
-            await connection.addFlags(uid, '\\Seen');
+            // If INBOX, marks as seen if not a lead
+            if (type === 'INBOX') await connection.addFlags(uid, '\\Seen');
             continue;
         }
 
-        // Parse body for content
+        // --- CONTENT PARSING ---
         const rawBody = msg.parts.find((part: any) => part.which === 'TEXT')?.body;
         const parsed = await simpleParser(rawBody || '');
+        const bodySnippet = parsed.text ? parsed.text.substring(0, 200) : 'No content';
 
-        console.log(`    -> NEW REPLY from ${lead.email} (${lead.source})`);
+        // --- ACTION ---
+        console.log(`    -> [${type}] Match: ${lead.email} (${lead.source})`);
 
-        // Mark as SEEN FIRST
-        await connection.addFlags(uid, '\\Seen');
-
-        // Add to our in-memory set to prevent re-processing within this sync
+        // Add to processed set
         processedMessageIds.add(uniqueId);
 
-        // Handle based on lead source
+        // Mark seen in IMAP
+        await connection.addFlags(uid, '\\Seen');
+
+        const logType = type === 'INBOX' ? 'REPLIED' : 'SENT'; // or 'MANUAL_SENT' matches schema? Schema has 'SENT'.
+
         if (lead.source === 'campaign') {
-            // Update Campaign Lead Status
-            if (lead.status !== 'REPLIED') {
+            // Update Lead Status only on REPLY
+            if (type === 'INBOX' && lead.status !== 'REPLIED') {
                 await prisma.lead.update({
                     where: { id: lead.id },
                     data: { status: 'REPLIED' }
                 });
             }
 
-            // Log Reply for campaign lead
+            // Create Log
             await prisma.emailLog.create({
                 data: {
                     leadId: lead.id,
                     campaignId: lead.campaignId,
                     emailAccountId: account.id,
-                    type: 'REPLIED',
+                    type: logType,
                     messageId: uniqueId,
                     subject: subjectHeader || 'No Subject',
-                    bodySnippet: parsed.text ? parsed.text.substring(0, 200) : 'No content',
-                    sentAt: new Date()
+                    bodySnippet: bodySnippet,
+                    sentAt: parsed.date || new Date()
                 }
             });
 
-            // Reply Guy - pass messageId for threading (only for campaign leads)
-            await processIncomingEmailReply({
-                leadId: lead.id,
-                workspaceId: account.workspaceId,
-                emailBody: parsed.text || '',
-                emailSubject: subjectHeader || '',
-                senderName: fromEmail,
-                inReplyToMessageId: uniqueId // Pass the incoming message ID for threading
-            });
+            // Trigger Reply Guy ONLY for INBOX messages
+            if (type === 'INBOX') {
+                await processIncomingEmailReply({
+                    leadId: lead.id,
+                    workspaceId: account.workspaceId,
+                    emailBody: parsed.text || '',
+                    emailSubject: subjectHeader || '',
+                    senderName: targetEmail, // This is the sender email in INBOX case
+                    inReplyToMessageId: uniqueId
+                });
+            }
+
         } else {
-            // Sender lead - just log for visibility in Unibox
-            // Create a general email log entry (no campaign association)
+            // Sender Lead
             await prisma.emailLog.create({
                 data: {
-                    leadId: null, // No campaign lead association
-                    campaignId: null,
+                    leadId: null,
+                    campaignId: null, // Sender leads aren't strictly attached to Campaign models this way usually
                     emailAccountId: account.id,
-                    type: 'REPLIED',
+                    type: logType,
                     messageId: uniqueId,
                     subject: subjectHeader || 'No Subject',
-                    bodySnippet: `[Sender Lead] ${parsed.text ? parsed.text.substring(0, 180) : 'No content'}`,
-                    sentAt: new Date()
+                    bodySnippet: `[Sender Lead] ${bodySnippet}`,
+                    sentAt: parsed.date || new Date()
                 }
             });
         }
-
         processedCount++;
     }
 
-    if (processedCount > 0 || skippedCount > 0) {
-        console.log(`  Sync complete: ${processedCount} new, ${skippedCount} already processed`);
+    if (processedCount > 0) {
+        console.log(`  [${type}] Sync processed ${processedCount} messages.`);
     }
-
-    connection.end();
 }

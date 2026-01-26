@@ -63,31 +63,31 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
     const StatCard = ({ title, value, icon: Icon, color, subValue, change, onClick }: any) => (
         <div
             onClick={onClick}
-            className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer active:scale-[0.98]"
+            className="bg-white/5 p-6 rounded-xl border border-white/10 shadow-sm hover:shadow-md hover:border-white/20 transition-all duration-200 cursor-pointer active:scale-[0.98]"
         >
             <div className="flex items-center justify-between mb-4">
-                <div className={`p-2 rounded-lg ${color}`}>
-                    <Icon className="w-5 h-5 text-white" />
+                <div className={`p-2 rounded-lg border ${color}`}>
+                    <Icon className="w-5 h-5" />
                 </div>
                 {change && (
                     <span className={cn("text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1",
-                        change.startsWith('-') ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600')}>
+                        change.startsWith('-') ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20')}>
                         {change.startsWith('-') ? <ArrowDownRight className="w-3 h-3" /> : <ArrowUpRight className="w-3 h-3" />}
                         {change}
                     </span>
                 )}
             </div>
-            <h3 className="text-slate-500 text-sm font-medium">{title}</h3>
-            <p className="text-2xl font-bold text-slate-900 mt-1">{value.toLocaleString()}</p>
-            {subValue && <p className="text-xs text-slate-400 mt-1">{subValue}</p>}
+            <h3 className="text-white/50 text-sm font-medium">{title}</h3>
+            <p className="text-2xl font-bold text-white mt-1">{value.toLocaleString()}</p>
+            {subValue && <p className="text-xs text-white/40 mt-1">{subValue}</p>}
         </div>
     );
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-8">
             <div>
-                <h1 className="text-2xl font-bold text-slate-900">Analytics</h1>
-                <p className="text-slate-500 text-sm mt-1">Overview of your email campaign performance</p>
+                <h1 className="text-2xl font-bold text-white">Analytics</h1>
+                <p className="text-white/50 text-sm mt-1">Overview of your email campaign performance</p>
             </div>
 
             {/* KPI Grid */}
@@ -96,7 +96,7 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                     title="Total Sent"
                     value={globalStats.sent}
                     icon={Mail}
-                    color="bg-blue-500"
+                    color="bg-blue-500/10 text-blue-400 border-blue-500/20"
                     change={globalStats.sentChange || '+0%'}
                     onClick={() => setSelectedStat({
                         name: 'Total Sent',
@@ -104,8 +104,8 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                         change: globalStats.sentChange || '+0%',
                         trend: getTrend(globalStats.sentChange),
                         icon: Mail,
-                        color: 'text-blue-600',
-                        bg: 'bg-blue-50',
+                        color: 'text-blue-400',
+                        bg: 'bg-blue-500/10',
                         chartData: dailyStats.map(d => ({ date: d.date, value: d.sent }))
                     })}
                 />
@@ -113,7 +113,7 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                     title="Opened"
                     value={globalStats.opened}
                     icon={BookOpen}
-                    color="bg-purple-500"
+                    color="bg-purple-500/10 text-purple-400 border-purple-500/20"
                     change={globalStats.openedChange || '+0%'}
                     subValue={globalStats.sent > 0 ? `${Math.round((globalStats.opened / globalStats.sent) * 100)}% Rate` : '0% Rate'}
                     onClick={() => setSelectedStat({
@@ -122,8 +122,8 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                         change: globalStats.openedChange || '+0%',
                         trend: getTrend(globalStats.openedChange),
                         icon: BookOpen,
-                        color: 'text-purple-600',
-                        bg: 'bg-purple-50',
+                        color: 'text-purple-400',
+                        bg: 'bg-purple-500/10',
                         chartData: dailyStats.map(d => ({ date: d.date, value: d.opened }))
                     })}
                 />
@@ -131,7 +131,7 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                     title="Replied"
                     value={globalStats.replied}
                     icon={MessageSquare}
-                    color="bg-emerald-500"
+                    color="bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
                     change={globalStats.repliedChange || '+0%'}
                     subValue={globalStats.sent > 0 ? `${Math.round((globalStats.replied / globalStats.sent) * 100)}% Rate` : '0% Rate'}
                     onClick={() => setSelectedStat({
@@ -140,8 +140,8 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                         change: globalStats.repliedChange || '+0%',
                         trend: getTrend(globalStats.repliedChange),
                         icon: MessageSquare,
-                        color: 'text-emerald-600',
-                        bg: 'bg-emerald-50',
+                        color: 'text-emerald-400',
+                        bg: 'bg-emerald-500/10',
                         chartData: dailyStats.map(d => ({ date: d.date, value: d.replied }))
                     })}
                 />
@@ -149,7 +149,7 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                     title="Bounced"
                     value={globalStats.bounced}
                     icon={AlertOctagon}
-                    color="bg-rose-500"
+                    color="bg-rose-500/10 text-rose-400 border-rose-500/20"
                     change={globalStats.bouncedChange || '+0%'}
                     subValue={globalStats.sent > 0 ? `${Math.round((globalStats.bounced / globalStats.sent) * 100)}% Rate` : '0% Rate'}
                     onClick={() => setSelectedStat({
@@ -158,8 +158,8 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                         change: globalStats.bouncedChange || '+0%',
                         trend: getTrend(globalStats.bouncedChange),
                         icon: AlertOctagon,
-                        color: 'text-rose-600',
-                        bg: 'bg-rose-50',
+                        color: 'text-rose-400',
+                        bg: 'bg-rose-500/10',
                         chartData: dailyStats.map(d => ({ date: d.date, value: 0 }))
                     })}
                 />
@@ -173,8 +173,8 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
             {/* Charts Section */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Main Trend Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-6">Engagement Trends (Last 30 Days)</h3>
+                <div className="lg:col-span-2 bg-white/5 p-6 rounded-xl border border-white/10 shadow-sm backdrop-blur-sm">
+                    <h3 className="text-lg font-semibold text-white mb-6">Engagement Trends (Last 30 Days)</h3>
                     <div className="h-[350px]">
                         <ResponsiveContainer width="100%" height="100%">
                             <AreaChart data={dailyStats}>
@@ -188,21 +188,21 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                                         <stop offset="95%" stopColor="#a855f7" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff10" />
                                 <XAxis
                                     dataKey="date"
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#64748B', fontSize: 12 }}
+                                    tick={{ fill: '#94a3b8', fontSize: 12 }}
                                     dy={10}
                                 />
                                 <YAxis
                                     axisLine={false}
                                     tickLine={false}
-                                    tick={{ fill: '#64748B', fontSize: 12 }}
+                                    tick={{ fill: '#94a3b8', fontSize: 12 }}
                                 />
                                 <Tooltip
-                                    contentStyle={{ backgroundColor: '#fff', borderRadius: '8px', border: '1px solid #E2E8F0', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                                    contentStyle={{ backgroundColor: '#0f172a', borderRadius: '8px', border: '1px solid #ffffff10', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.5)', color: '#fff' }}
                                     itemStyle={{ fontSize: '13px', fontWeight: 500 }}
                                 />
                                 <Legend />
@@ -239,30 +239,30 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                 </div>
 
                 {/* Campaign Performance Table (Mini) */}
-                <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-                    <h3 className="text-lg font-semibold text-slate-900 mb-4">Top Campaigns</h3>
+                <div className="bg-white/5 p-6 rounded-xl border border-white/10 shadow-sm overflow-hidden flex flex-col backdrop-blur-sm">
+                    <h3 className="text-lg font-semibold text-white mb-4">Top Campaigns</h3>
                     <div className="overflow-y-auto flex-1">
                         <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0">
+                            <thead className="text-xs text-white/50 uppercase bg-white/5 sticky top-0">
                                 <tr>
                                     <th className="px-3 py-3 rounded-l-lg">Name</th>
                                     <th className="px-3 py-3 text-right">Sent</th>
                                     <th className="px-3 py-3 text-right rounded-r-lg">Reply%</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-100">
+                            <tbody className="divide-y divide-white/5">
                                 {campaignStats.map((camp) => (
-                                    <tr key={camp.id} className="hover:bg-slate-50/50 transition-colors">
-                                        <td className="px-3 py-3 font-medium text-slate-900 truncate max-w-[120px]" title={camp.name}>
+                                    <tr key={camp.id} className="hover:bg-white/5 transition-colors">
+                                        <td className="px-3 py-3 font-medium text-white truncate max-w-[120px]" title={camp.name}>
                                             {camp.name}
                                         </td>
-                                        <td className="px-3 py-3 text-right text-slate-600">
+                                        <td className="px-3 py-3 text-right text-white/60">
                                             {camp.sent}
                                         </td>
                                         <td className="px-3 py-3 text-right">
                                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${(camp.replied / (camp.sent || 1)) > 0.1
-                                                ? 'bg-emerald-100 text-emerald-800'
-                                                : 'bg-slate-100 text-slate-600'
+                                                ? 'bg-emerald-500/20 text-emerald-400'
+                                                : 'bg-white/10 text-white/50'
                                                 }`}>
                                                 {Math.round((camp.replied / (camp.sent || 1)) * 100)}%
                                             </span>
@@ -271,7 +271,7 @@ export function AnalyticsClient({ globalStats, dailyStats, campaignStats }: Anal
                                 ))}
                                 {campaignStats.length === 0 && (
                                     <tr>
-                                        <td colSpan={3} className="px-3 py-8 text-center text-slate-400">
+                                        <td colSpan={3} className="px-3 py-8 text-center text-white/40">
                                             No campaigns found
                                         </td>
                                     </tr>

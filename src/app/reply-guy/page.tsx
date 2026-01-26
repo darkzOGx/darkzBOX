@@ -49,12 +49,12 @@ export default async function ReplyGuyPage() {
     return (
         <div className="p-8 max-w-4xl mx-auto">
             <div className="flex items-center gap-3 mb-8">
-                <div className="h-12 w-12 bg-purple-100 text-purple-600 rounded-xl flex items-center justify-center">
+                <div className="h-12 w-12 bg-purple-500/10 border border-purple-500/20 text-purple-400 rounded-xl flex items-center justify-center">
                     <Bot className="w-6 h-6" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Reply Guy Configuration</h1>
-                    <p className="text-slate-500">Automate your email responses with Claude AI</p>
+                    <h1 className="text-2xl font-bold text-white">Reply Guy Configuration</h1>
+                    <p className="text-sm text-white/50">Automate your email responses with Claude AI</p>
                 </div>
             </div>
 

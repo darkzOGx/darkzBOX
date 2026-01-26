@@ -149,12 +149,12 @@ export default function BlocklistPage() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-red-100 rounded-lg">
-                        <ShieldBan className="w-6 h-6 text-red-600" />
+                    <div className="p-2 bg-red-500/10 rounded-lg border border-red-500/20">
+                        <ShieldBan className="w-6 h-6 text-red-400" />
                     </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-slate-900">Blocklist</h1>
-                        <p className="text-sm text-slate-500">
+                        <h1 className="text-2xl font-bold text-white">Blocklist</h1>
+                        <p className="text-sm text-white/50">
                             {total} blocked email{total !== 1 ? 's' : ''} - These addresses will never receive campaign emails
                         </p>
                     </div>
@@ -162,12 +162,12 @@ export default function BlocklistPage() {
                 <div className="flex gap-2">
                     <button
                         onClick={downloadTemplate}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50"
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white/60 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors"
                     >
                         <Download className="w-4 h-4" />
                         Template
                     </button>
-                    <label className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 cursor-pointer">
+                    <label className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white/60 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 cursor-pointer transition-colors">
                         <Upload className="w-4 h-4" />
                         {uploading ? 'Uploading...' : 'Upload CSV'}
                         <input
@@ -181,7 +181,7 @@ export default function BlocklistPage() {
                     </label>
                     <button
                         onClick={() => setShowAddForm(true)}
-                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700"
+                        className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-500 shadow-lg shadow-red-900/20 transition-all"
                     >
                         <Plus className="w-4 h-4" />
                         Add Email
@@ -191,12 +191,12 @@ export default function BlocklistPage() {
 
             {/* Upload Result */}
             {uploadResult && (
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
-                    <span className="text-green-700">
+                <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center justify-between">
+                    <span className="text-green-400">
                         Added {uploadResult.added} email{uploadResult.added !== 1 ? 's' : ''} to blocklist
                         {uploadResult.skipped > 0 && ` (${uploadResult.skipped} skipped - duplicates or invalid)`}
                     </span>
-                    <button onClick={() => setUploadResult(null)} className="text-green-600 hover:text-green-800">
+                    <button onClick={() => setUploadResult(null)} className="text-green-400 hover:text-green-300">
                         <X className="w-4 h-4" />
                     </button>
                 </div>
@@ -205,16 +205,16 @@ export default function BlocklistPage() {
             {/* Add Form Modal */}
             {showAddForm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowAddForm(false)}>
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                    <div className="bg-slate-900 border border-white/10 rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-slate-900">Add to Blocklist</h3>
-                            <button onClick={() => setShowAddForm(false)} className="text-slate-400 hover:text-slate-600">
+                            <h3 className="text-lg font-semibold text-white">Add to Blocklist</h3>
+                            <button onClick={() => setShowAddForm(false)} className="text-white/40 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">
+                                <label className="block text-sm font-medium text-white/70 mb-1">
                                     Email Address <span className="text-red-500">*</span>
                                 </label>
                                 <input
@@ -222,43 +222,43 @@ export default function BlocklistPage() {
                                     value={newEmail}
                                     onChange={e => setNewEmail(e.target.value)}
                                     placeholder="email@example.com"
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none"
+                                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none text-white placeholder-white/20"
                                     autoFocus
                                 />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">First Name</label>
+                                    <label className="block text-sm font-medium text-white/70 mb-1">First Name</label>
                                     <input
                                         type="text"
                                         value={newFirstName}
                                         onChange={e => setNewFirstName(e.target.value)}
                                         placeholder="John"
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none"
+                                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none text-white placeholder-white/20"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-slate-700 mb-1">Last Name</label>
+                                    <label className="block text-sm font-medium text-white/70 mb-1">Last Name</label>
                                     <input
                                         type="text"
                                         value={newLastName}
                                         onChange={e => setNewLastName(e.target.value)}
                                         placeholder="Doe"
-                                        className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none"
+                                        className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-red-500/20 focus:border-red-500 outline-none text-white placeholder-white/20"
                                     />
                                 </div>
                             </div>
                             <div className="flex justify-end gap-2 pt-4">
                                 <button
                                     onClick={() => setShowAddForm(false)}
-                                    className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg"
+                                    className="px-4 py-2 text-sm font-medium text-white/60 hover:bg-white/10 rounded-lg transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleAddManual}
                                     disabled={!newEmail.trim() || addingManual}
-                                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:opacity-50 flex items-center gap-2"
+                                    className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-500 disabled:opacity-50 flex items-center gap-2 shadow-lg shadow-red-900/20 transition-all"
                                 >
                                     {addingManual && <Loader2 className="w-4 h-4 animate-spin" />}
                                     Add to Blocklist
@@ -271,58 +271,58 @@ export default function BlocklistPage() {
 
             {/* Search */}
             <div className="relative">
-                <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
                 <input
                     type="text"
                     placeholder="Search blocked emails..."
                     value={search}
                     onChange={e => { setSearch(e.target.value); setPage(1); }}
-                    className="w-full pl-9 pr-4 py-2 text-sm border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none"
+                    className="w-full pl-9 pr-4 py-2 text-sm bg-black/20 border border-white/10 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none text-white placeholder-white/20"
                 />
             </div>
 
             {/* Table */}
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden shadow-sm backdrop-blur-sm">
                 <table className="w-full text-sm">
-                    <thead className="bg-slate-50 border-b border-slate-200">
+                    <thead className="bg-white/5 border-b border-white/5">
                         <tr>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Email</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Name</th>
-                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Added</th>
-                            <th className="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wider">Email</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wider">Name</th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-white/50 uppercase tracking-wider">Added</th>
+                            <th className="px-6 py-3 text-right text-xs font-semibold text-white/50 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-white/5">
                         {loading ? (
                             <tr>
                                 <td colSpan={4} className="py-12 text-center">
-                                    <Loader2 className="w-8 h-8 animate-spin text-slate-300 mx-auto" />
+                                    <Loader2 className="w-8 h-8 animate-spin text-white/20 mx-auto" />
                                 </td>
                             </tr>
                         ) : blockedEmails.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="py-12 text-center text-slate-500">
+                                <td colSpan={4} className="py-12 text-center text-white/50">
                                     {search ? 'No matching emails found' : 'No blocked emails yet'}
                                 </td>
                             </tr>
                         ) : blockedEmails.map(item => (
-                            <tr key={item.id} className="hover:bg-slate-50/50">
+                            <tr key={item.id} className="hover:bg-white/5 transition-colors">
                                 <td className="px-6 py-4">
-                                    <span className="font-medium text-slate-900">{item.email}</span>
+                                    <span className="font-medium text-white">{item.email}</span>
                                 </td>
-                                <td className="px-6 py-4 text-slate-600">
+                                <td className="px-6 py-4 text-white/60">
                                     {item.firstName || item.lastName
                                         ? `${item.firstName || ''} ${item.lastName || ''}`.trim()
-                                        : <span className="text-slate-400 italic">-</span>
+                                        : <span className="text-white/40 italic">-</span>
                                     }
                                 </td>
-                                <td className="px-6 py-4 text-slate-500 text-xs">
+                                <td className="px-6 py-4 text-white/50 text-xs">
                                     {new Date(item.createdAt).toLocaleDateString()}
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <button
                                         onClick={() => handleRemove(item.id)}
-                                        className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                        className="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                                         title="Remove from blocklist"
                                     >
                                         <Trash2 className="w-4 h-4" />
@@ -335,22 +335,22 @@ export default function BlocklistPage() {
 
                 {/* Pagination */}
                 {totalPages > 1 && (
-                    <div className="px-6 py-3 border-t border-slate-100 bg-slate-50/50 flex items-center justify-between">
-                        <span className="text-sm text-slate-500">
+                    <div className="px-6 py-3 border-t border-white/5 bg-transparent flex items-center justify-between">
+                        <span className="text-sm text-white/50">
                             Page {page} of {totalPages}
                         </span>
                         <div className="flex gap-2">
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="p-1 hover:bg-slate-200 rounded disabled:opacity-30"
+                                className="p-1 hover:bg-white/10 rounded disabled:opacity-30 text-white/50 hover:text-white transition-colors"
                             >
                                 <ChevronLeft className="w-5 h-5" />
                             </button>
                             <button
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                 disabled={page === totalPages}
-                                className="p-1 hover:bg-slate-200 rounded disabled:opacity-30"
+                                className="p-1 hover:bg-white/10 rounded disabled:opacity-30 text-white/50 hover:text-white transition-colors"
                             >
                                 <ChevronRight className="w-5 h-5" />
                             </button>

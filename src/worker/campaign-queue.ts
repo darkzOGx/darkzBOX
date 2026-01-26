@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma';
 import { replaceSpintax, replaceVariables } from '../lib/spintax';
 import { isInSendingWindow } from '../lib/sending-window';
 import { sendEmailViaAccount } from '../lib/email-engine'; // Stub to be created
+import { emailQueue } from '../lib/queues';
 
 // removed direct new PrismaClient()
 
@@ -180,17 +181,35 @@ export const campaignWorker = new Worker(QUEUE_NAME, async (job: Job) => {
             })
         ]);
 
-        // 8. Schedule Next Step?
+        // 8. Schedule Next Step
         const nextStep = await prisma.campaignStep.findFirst({
             where: { campaignId: campaign.id, order: stepOrder + 1 }
         });
 
         if (nextStep) {
-            // Add delay
-            const delayMs = nextStep.waitDays * 24 * 60 * 60 * 1000;
-            // In a real app we'd add a new job to the queue
-            console.log(`Scheduling next step in ${nextStep.waitDays} days`);
-            // queue.add(...)
+            // Add delay (waitDays)
+            // If waitDays is 0, maybe wait 1 day minimum? Or immediate? usually cold email has gaps.
+            const delayMs = Math.max(nextStep.waitDays * 24 * 60 * 60 * 1000, 60 * 1000); // Min 1 minute for safety
+
+            await emailQueue.add('send-email', {
+                leadId: lead.id,
+                campaignId: campaign.id,
+                stepOrder: nextStep.order
+            }, {
+                delay: delayMs,
+                jobId: `campaign-${campaign.id}-lead-${lead.id}-step-${nextStep.order}` // Dedup
+            });
+
+            console.log(`[Scheduler] Scheduled Step ${nextStep.order} for lead ${lead.email} in ${nextStep.waitDays} days`);
+        } else {
+            // No more steps, maybe mark lead as COMPLETED?
+            /* 
+            await prisma.lead.update({
+               where: { id: lead.id },
+               data: { status: 'COMPLETED' } 
+            });
+            */
+            console.log(`[Scheduler] Campaign completed for lead ${lead.email}`);
         }
 
         console.log(`Email sent successfully to ${lead.email} via ${selectedAccount.email}`);

@@ -70,9 +70,9 @@ export function CampaignsTable({ campaigns }: { campaigns: Campaign[] }) {
     };
 
     return (
-        <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm min-h-[400px]">
+        <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden shadow-sm min-h-[400px] backdrop-blur-sm">
             <table className="w-full text-sm text-left">
-                <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+                <thead className="bg-white/5 text-white/50 font-medium border-b border-white/10">
                     <tr>
                         <th className="px-6 py-4">Name</th>
                         <th className="px-6 py-4">Status</th>
@@ -81,44 +81,44 @@ export function CampaignsTable({ campaigns }: { campaigns: Campaign[] }) {
                         <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-white/5">
                     {campaigns.length === 0 ? (
-                        <tr><td colSpan={5} className="text-center py-8 text-slate-500">No campaigns found.</td></tr>
+                        <tr><td colSpan={5} className="text-center py-8 text-white/50">No campaigns found.</td></tr>
                     ) : campaigns.map((campaign) => (
-                        <tr 
-                            key={campaign.id} 
-                            className="hover:bg-slate-50/50 transition-colors cursor-pointer group"
+                        <tr
+                            key={campaign.id}
+                            className="hover:bg-white/5 transition-colors cursor-pointer group"
                             onClick={() => handleRowClick(campaign.id)}
                         >
                             <td className="px-6 py-4">
-                                <Link 
-                                    href={`/campaigns/${campaign.id}`} 
-                                    className="font-semibold text-slate-900 hover:text-blue-600 transition-colors block"
+                                <Link
+                                    href={`/campaigns/${campaign.id}`}
+                                    className="font-semibold text-white hover:text-blue-400 transition-colors block"
                                     onClick={(e) => e.stopPropagation()}
                                 >
                                     {campaign.name}
                                 </Link>
-                                <p className="text-xs text-slate-400 mt-0.5">Created {campaign.created}</p>
+                                <p className="text-xs text-white/40 mt-0.5">Created {campaign.created}</p>
                             </td>
                             <td className="px-6 py-4">
                                 <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border uppercase tracking-wider",
-                                    campaign.status === 'ACTIVE' ? 'bg-green-50 text-green-700 border-green-200' :
-                                        campaign.status === 'PAUSED' ? 'bg-yellow-50 text-yellow-700 border-yellow-200' :
-                                            campaign.status === 'COMPLETED' ? 'bg-slate-100 text-slate-700 border-slate-200' :
-                                                'bg-slate-50 text-slate-500 border-slate-200'
+                                    campaign.status === 'ACTIVE' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                        campaign.status === 'PAUSED' ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' :
+                                            campaign.status === 'COMPLETED' ? 'bg-white/10 text-white/70 border-white/10' :
+                                                'bg-white/5 text-white/50 border-white/10'
                                 )}>
-                                    {campaign.status === 'ACTIVE' && <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block mr-1.5 mb-0.5 animate-pulse"></span>}
+                                    {campaign.status === 'ACTIVE' && <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block mr-1.5 mb-0.5 animate-pulse"></span>}
                                     {campaign.status}
                                 </span>
                             </td>
                             <td className="px-6 py-4">
                                 <div className="flex items-center gap-2 mb-1.5">
-                                    <span className="text-slate-600 font-medium">{campaign.sent}</span>
-                                    <span className="text-slate-400">/ {campaign.leads}</span>
+                                    <span className="text-white/80 font-medium">{campaign.sent}</span>
+                                    <span className="text-white/40">/ {campaign.leads}</span>
                                 </div>
-                                <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                <div className="w-24 h-1.5 bg-white/10 rounded-full overflow-hidden">
                                     <div
-                                        className="h-full bg-blue-500 rounded-full"
+                                        className="h-full bg-blue-500 rounded-full shadow-[0_0_10px_rgba(59,130,246,0.5)]"
                                         style={{ width: campaign.leads > 0 ? `${(campaign.sent / campaign.leads) * 100}%` : '0%' }}
                                     ></div>
                                 </div>
@@ -126,47 +126,47 @@ export function CampaignsTable({ campaigns }: { campaigns: Campaign[] }) {
                             <td className="px-6 py-4">
                                 <div className="flex gap-4">
                                     <div>
-                                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Open</p>
-                                        <p className="text-slate-700 font-medium">{campaign.openRate}</p>
+                                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Open</p>
+                                        <p className="text-white/80 font-medium">{campaign.openRate}</p>
                                     </div>
                                     <div>
-                                        <p className="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Reply</p>
-                                        <p className="text-slate-700 font-medium">{campaign.replyRate}</p>
+                                        <p className="text-[10px] text-white/40 uppercase font-bold tracking-wider">Reply</p>
+                                        <p className="text-white/80 font-medium">{campaign.replyRate}</p>
                                     </div>
                                 </div>
                             </td>
                             <td className="px-6 py-4 text-right relative">
                                 <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <button 
+                                    <button
                                         onClick={(e) => handleStatusToggle(e, campaign.id, campaign.status)}
-                                        className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                        className="p-2 text-white/40 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
                                         title={campaign.status === 'ACTIVE' ? "Pause" : "Resume"}
                                     >
                                         {campaign.status === 'ACTIVE' ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
                                     </button>
-                                    <button 
+                                    <button
                                         onClick={(e) => handleMenuToggle(e, campaign.id)}
-                                        className={cn("p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors", openMenuId === campaign.id && "bg-slate-100 text-slate-600 opacity-100")}
+                                        className={cn("p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-colors", openMenuId === campaign.id && "bg-white/10 text-white opacity-100")}
                                     >
                                         <MoreHorizontal className="w-4 h-4" />
                                     </button>
                                 </div>
                                 {openMenuId === campaign.id && (
-                                    <div ref={menuRef} className="absolute right-8 top-12 z-10 w-36 bg-white rounded-lg shadow-lg border border-slate-100 py-1 animate-in fade-in zoom-in-95 duration-100 origin-top-right">
-                                        <button 
-                                            onClick={(e) => { 
-                                                e.stopPropagation(); 
+                                    <div ref={menuRef} className="absolute right-8 top-12 z-10 w-36 bg-slate-900 rounded-lg shadow-xl border border-white/10 py-1 animate-in fade-in zoom-in-95 duration-100 origin-top-right backdrop-blur-sm">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
                                                 router.push(`/campaigns/${campaign.id}/edit`);
                                                 setOpenMenuId(null);
                                             }}
-                                            className="w-full px-4 py-2 text-left text-sm text-slate-600 hover:bg-slate-50 flex items-center gap-2"
+                                            className="w-full px-4 py-2 text-left text-sm text-white/70 hover:text-white hover:bg-white/5 flex items-center gap-2 transition-colors"
                                         >
                                             <Edit className="w-3.5 h-3.5" />
                                             Edit
                                         </button>
-                                        <button 
+                                        <button
                                             onClick={(e) => handleDelete(e, campaign.id)}
-                                            className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                            className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-red-500/10 flex items-center gap-2 transition-colors"
                                         >
                                             <Trash2 className="w-3.5 h-3.5" />
                                             Delete

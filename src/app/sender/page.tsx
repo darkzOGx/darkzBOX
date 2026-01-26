@@ -24,26 +24,26 @@ export default function SenderPage() {
         <div className="p-8 max-w-6xl mx-auto space-y-6">
             {/* Header */}
             <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                    <Radio className="w-6 h-6 text-purple-600" />
+                <div className="p-2 bg-purple-500/10 rounded-lg border border-purple-500/20">
+                    <Radio className="w-6 h-6 text-purple-400" />
                 </div>
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Sender</h1>
-                    <p className="text-sm text-slate-500">Standalone SMTP email sender with templates and lead groups</p>
+                    <h1 className="text-2xl font-bold text-white">Sender</h1>
+                    <p className="text-sm text-white/50">Standalone SMTP email sender with templates and lead groups</p>
                 </div>
             </div>
 
             {/* Info Banner */}
-            <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-                <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                <div className="text-sm text-blue-800 space-y-1">
+            <div className="flex items-start gap-3 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                <Info className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-200 space-y-1">
                     <p><strong>NOTE:</strong> This page is for sending a one-time campaign immediately and DOES NOT include follow-up sequences.</p>
                     <p>For multi-sequence campaigns, please go to <strong>&quot;Campaigns&quot;</strong> in the sidebar.</p>
                 </div>
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-slate-100 p-1 rounded-lg w-fit">
+            <div className="flex gap-1 bg-slate-900/50 p-1 rounded-lg w-fit border border-white/5">
                 {[
                     { key: 'templates', label: 'Templates', icon: FileText },
                     { key: 'leads', label: 'Lead Groups', icon: Users },
@@ -53,10 +53,10 @@ export default function SenderPage() {
                         key={tab.key}
                         onClick={() => setActiveTab(tab.key as Tab)}
                         className={cn(
-                            "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                            "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-all",
                             activeTab === tab.key
-                                ? "bg-white text-slate-900 shadow-sm"
-                                : "text-slate-600 hover:text-slate-900"
+                                ? "bg-blue-600 text-white shadow-lg shadow-blue-900/20"
+                                : "text-white/50 hover:text-white hover:bg-white/5"
                         )}
                     >
                         <tab.icon className="w-4 h-4" />
@@ -128,10 +128,10 @@ function TemplatesTab() {
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <p className="text-sm text-slate-500">{templates.length} template{templates.length !== 1 ? 's' : ''}</p>
+                <p className="text-sm text-white/50">{templates.length} template{templates.length !== 1 ? 's' : ''}</p>
                 <button
                     onClick={() => { setShowForm(true); setEditingTemplate(null); setForm({ name: '', subject: '', body: '' }); }}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-500 shadow-lg shadow-purple-900/20 hover:shadow-purple-900/40 transition-all"
                 >
                     <Plus className="w-4 h-4" />
                     New Template
@@ -141,39 +141,39 @@ function TemplatesTab() {
             {/* Template Form Modal */}
             {showForm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowForm(false)}>
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                    <div className="bg-slate-900 border border-white/10 rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-slate-900">
+                            <h3 className="text-lg font-semibold text-white">
                                 {editingTemplate ? 'Edit Template' : 'New Template'}
                             </h3>
-                            <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
+                            <button onClick={() => setShowForm(false)} className="text-white/40 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Template Name</label>
+                                <label className="block text-sm font-medium text-white/70 mb-1">Template Name</label>
                                 <input
                                     type="text"
                                     value={form.name}
                                     onChange={e => setForm({ ...form, name: e.target.value })}
                                     placeholder="e.g., Welcome Email"
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-white placeholder-white/20"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Subject Line</label>
+                                <label className="block text-sm font-medium text-white/70 mb-1">Subject Line</label>
                                 <input
                                     type="text"
                                     value={form.subject}
                                     onChange={e => setForm({ ...form, subject: e.target.value })}
                                     placeholder="e.g., Quick question about {{company}}"
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-white placeholder-white/20"
                                 />
-                                <p className="text-xs text-slate-400 mt-1">Use {'{{firstName}}'}, {'{{lastName}}'}, {'{{company}}'} for personalization</p>
+                                <p className="text-xs text-white/40 mt-1">Use {'{{firstName}}'}, {'{{lastName}}'}, {'{{company}}'} for personalization</p>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Email Body</label>
+                                <label className="block text-sm font-medium text-white/70 mb-1">Email Body</label>
                                 <RichTextEditor
                                     content={form.body}
                                     onChange={(html) => setForm({ ...form, body: html })}
@@ -187,13 +187,13 @@ function TemplatesTab() {
                                 />
                             </div>
                             <div className="flex justify-end gap-2 pt-4">
-                                <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">
+                                <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm font-medium text-white/60 hover:bg-white/10 rounded-lg transition-colors">
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleSave}
                                     disabled={saving || !form.name || !form.subject || !form.body}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-500 disabled:opacity-50 transition-colors shadow-lg shadow-purple-900/20"
                                 >
                                     {saving && <Loader2 className="w-4 h-4 animate-spin" />}
                                     Save Template
@@ -207,26 +207,26 @@ function TemplatesTab() {
             {/* Templates List */}
             {loading ? (
                 <div className="py-12 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-slate-300 mx-auto" />
+                    <Loader2 className="w-8 h-8 animate-spin text-white/20 mx-auto" />
                 </div>
             ) : templates.length === 0 ? (
-                <div className="py-12 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                    <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-slate-500">No templates yet. Create your first template to get started.</p>
+                <div className="py-12 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
+                    <FileText className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                    <p className="text-white/50">No templates yet. Create your first template to get started.</p>
                 </div>
             ) : (
                 <div className="grid grid-cols-1 gap-3">
                     {templates.map(template => (
-                        <div key={template.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                        <div key={template.id} className="bg-white/5 p-4 rounded-xl border border-white/5 hover:border-white/10 transition-colors shadow-sm flex items-center justify-between group">
                             <div>
-                                <h3 className="font-semibold text-slate-900">{template.name}</h3>
-                                <p className="text-sm text-slate-500 truncate max-w-md">{template.subject}</p>
+                                <h3 className="font-semibold text-white">{template.name}</h3>
+                                <p className="text-sm text-white/50 truncate max-w-md">{template.subject}</p>
                             </div>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => handleEdit(template)} className="p-2 text-slate-400 hover:text-purple-600 hover:bg-purple-50 rounded-lg">
+                                <button onClick={() => handleEdit(template)} className="p-2 text-white/40 hover:text-purple-400 hover:bg-purple-500/10 rounded-lg transition-colors">
                                     <Edit2 className="w-4 h-4" />
                                 </button>
-                                <button onClick={() => handleDelete(template.id)} className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                                <button onClick={() => handleDelete(template.id)} className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors">
                                     <Trash2 className="w-4 h-4" />
                                 </button>
                             </div>
@@ -359,13 +359,13 @@ function LeadGroupsTab() {
                     value={newGroupName}
                     onChange={e => setNewGroupName(e.target.value)}
                     placeholder="New group name..."
-                    className="flex-1 px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                    className="flex-1 px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-white placeholder-white/20"
                     onKeyDown={e => e.key === 'Enter' && handleCreateGroup()}
                 />
                 <button
                     onClick={handleCreateGroup}
                     disabled={creating || !newGroupName.trim()}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 shadow-lg shadow-purple-900/20 transition-all"
                 >
                     {creating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
                     Create Group
@@ -375,32 +375,32 @@ function LeadGroupsTab() {
             <div className="grid grid-cols-3 gap-4">
                 {/* Groups List */}
                 <div className="col-span-1 space-y-2">
-                    <h3 className="text-sm font-semibold text-slate-700">Groups</h3>
+                    <h3 className="text-sm font-semibold text-white/70">Groups</h3>
                     {loading ? (
                         <div className="py-8 text-center">
-                            <Loader2 className="w-6 h-6 animate-spin text-slate-300 mx-auto" />
+                            <Loader2 className="w-6 h-6 animate-spin text-white/20 mx-auto" />
                         </div>
                     ) : groups.length === 0 ? (
-                        <p className="text-sm text-slate-500 py-4">No groups yet</p>
+                        <p className="text-sm text-white/50 py-4">No groups yet</p>
                     ) : (
                         groups.map(group => (
                             <div
                                 key={group.id}
                                 className={cn(
-                                    "p-3 rounded-lg border cursor-pointer flex items-center justify-between",
+                                    "p-3 rounded-lg border cursor-pointer flex items-center justify-between transition-colors",
                                     selectedGroup?.id === group.id
-                                        ? "bg-purple-50 border-purple-200"
-                                        : "bg-white border-slate-200 hover:bg-slate-50"
+                                        ? "bg-purple-500/20 border-purple-500/30"
+                                        : "bg-white/5 border-white/5 hover:bg-white/10"
                                 )}
                                 onClick={() => setSelectedGroup(group)}
                             >
                                 <div>
-                                    <p className="font-medium text-slate-900">{group.name}</p>
-                                    <p className="text-xs text-slate-500">{group._count?.leads || 0} leads</p>
+                                    <p className="font-medium text-white">{group.name}</p>
+                                    <p className="text-xs text-white/50">{group._count?.leads || 0} leads</p>
                                 </div>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); handleDeleteGroup(group.id); }}
-                                    className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                    className="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
                                 >
                                     <Trash2 className="w-4 h-4" />
                                 </button>
@@ -410,12 +410,12 @@ function LeadGroupsTab() {
                 </div>
 
                 {/* Leads List */}
-                <div className="col-span-2 bg-white rounded-xl border border-slate-200 p-4">
+                <div className="col-span-2 bg-slate-900/40 rounded-xl border border-white/10 p-4 backdrop-blur-sm">
                     {selectedGroup ? (
                         <div className="space-y-4">
                             <div className="flex items-center justify-between">
-                                <h3 className="font-semibold text-slate-900">{selectedGroup.name} - Leads</h3>
-                                <label className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-600 bg-purple-50 rounded-lg hover:bg-purple-100 cursor-pointer">
+                                <h3 className="font-semibold text-white">{selectedGroup.name} - Leads</h3>
+                                <label className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-purple-400 bg-purple-500/10 rounded-lg hover:bg-purple-500/20 cursor-pointer border border-purple-500/20 transition-colors">
                                     <Upload className="w-4 h-4" />
                                     {uploading ? 'Uploading...' : 'Upload CSV'}
                                     <input
@@ -430,31 +430,31 @@ function LeadGroupsTab() {
                             </div>
 
                             {uploadResult && (
-                                <div className="p-2 bg-green-50 border border-green-200 rounded text-sm text-green-700">
+                                <div className="p-2 bg-green-500/10 border border-green-500/20 rounded text-sm text-green-400">
                                     Added {uploadResult.added} leads {uploadResult.skipped > 0 && `(${uploadResult.skipped} skipped)`}
                                 </div>
                             )}
 
                             {loadingLeads ? (
                                 <div className="py-8 text-center">
-                                    <Loader2 className="w-6 h-6 animate-spin text-slate-300 mx-auto" />
+                                    <Loader2 className="w-6 h-6 animate-spin text-white/20 mx-auto" />
                                 </div>
                             ) : groupLeads.length === 0 ? (
-                                <p className="text-sm text-slate-500 py-8 text-center">No leads in this group. Upload a CSV to add leads.</p>
+                                <p className="text-sm text-white/50 py-8 text-center">No leads in this group. Upload a CSV to add leads.</p>
                             ) : (
                                 <>
-                                    <div className="divide-y divide-slate-100 max-h-96 overflow-y-auto">
+                                    <div className="divide-y divide-white/5 max-h-96 overflow-y-auto">
                                         {groupLeads.map(lead => (
-                                            <div key={lead.id} className="py-2 flex items-center justify-between">
+                                            <div key={lead.id} className="py-2 flex items-center justify-between hover:bg-white/5 px-2 rounded transition-colors">
                                                 <div>
-                                                    <p className="text-sm font-medium text-slate-900">{lead.email}</p>
-                                                    <p className="text-xs text-slate-500">
+                                                    <p className="text-sm font-medium text-white">{lead.email}</p>
+                                                    <p className="text-xs text-white/50">
                                                         {[lead.firstName, lead.lastName, lead.company].filter(Boolean).join(' - ') || '-'}
                                                     </p>
                                                 </div>
                                                 <button
                                                     onClick={() => handleRemoveLead(lead.id)}
-                                                    className="p-1 text-slate-400 hover:text-red-600"
+                                                    className="p-1 text-white/40 hover:text-red-400 transition-colors"
                                                 >
                                                     <X className="w-4 h-4" />
                                                 </button>
@@ -462,20 +462,20 @@ function LeadGroupsTab() {
                                         ))}
                                     </div>
                                     {leadsTotalPages > 1 && (
-                                        <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                                            <span className="text-xs text-slate-500">Page {leadsPage} of {leadsTotalPages}</span>
+                                        <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                                            <span className="text-xs text-white/50">Page {leadsPage} of {leadsTotalPages}</span>
                                             <div className="flex gap-1">
                                                 <button
                                                     onClick={() => fetchGroupLeads(selectedGroup.id, leadsPage - 1)}
                                                     disabled={leadsPage === 1}
-                                                    className="p-1 hover:bg-slate-100 rounded disabled:opacity-30"
+                                                    className="p-1 hover:bg-white/10 text-white/50 hover:text-white rounded disabled:opacity-30 transition-colors"
                                                 >
                                                     <ChevronLeft className="w-4 h-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => fetchGroupLeads(selectedGroup.id, leadsPage + 1)}
                                                     disabled={leadsPage === leadsTotalPages}
-                                                    className="p-1 hover:bg-slate-100 rounded disabled:opacity-30"
+                                                    className="p-1 hover:bg-white/10 text-white/50 hover:text-white rounded disabled:opacity-30 transition-colors"
                                                 >
                                                     <ChevronRight className="w-4 h-4" />
                                                 </button>
@@ -486,8 +486,8 @@ function LeadGroupsTab() {
                             )}
                         </div>
                     ) : (
-                        <div className="py-12 text-center text-slate-500">
-                            <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                        <div className="py-12 text-center text-white/50">
+                            <Users className="w-12 h-12 text-white/20 mx-auto mb-3" />
                             <p>Select a group to view leads</p>
                         </div>
                     )}
@@ -607,11 +607,11 @@ function CampaignsTab() {
     return (
         <div className="space-y-4">
             <div className="flex justify-between items-center">
-                <p className="text-sm text-slate-500">{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''}</p>
+                <p className="text-sm text-white/50">{campaigns.length} campaign{campaigns.length !== 1 ? 's' : ''}</p>
                 <button
                     onClick={() => setShowForm(true)}
                     disabled={templates.length === 0 || groups.length === 0}
-                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 shadow-lg shadow-purple-900/20 transition-all"
                     title={templates.length === 0 ? "Create a template first" : groups.length === 0 ? "Create a lead group first" : ""}
                 >
                     <Plus className="w-4 h-4" />
@@ -622,30 +622,30 @@ function CampaignsTab() {
             {/* Create Campaign Modal */}
             {showForm && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => setShowForm(false)}>
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
+                    <div className="bg-slate-900 border border-white/10 rounded-xl shadow-xl w-full max-w-md p-6" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-slate-900">New Campaign</h3>
-                            <button onClick={() => setShowForm(false)} className="text-slate-400 hover:text-slate-600">
+                            <h3 className="text-lg font-semibold text-white">New Campaign</h3>
+                            <button onClick={() => setShowForm(false)} className="text-white/40 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
                         <div className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Campaign Name</label>
+                                <label className="block text-sm font-medium text-white/70 mb-1">Campaign Name</label>
                                 <input
                                     type="text"
                                     value={form.name}
                                     onChange={e => setForm({ ...form, name: e.target.value })}
                                     placeholder="e.g., Q1 Outreach"
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-white placeholder-white/20"
                                 />
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Template</label>
+                                <label className="block text-sm font-medium text-white/70 mb-1">Template</label>
                                 <select
                                     value={form.templateId}
                                     onChange={e => setForm({ ...form, templateId: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-white"
                                 >
                                     <option value="">Select a template...</option>
                                     {templates.map(t => (
@@ -654,11 +654,11 @@ function CampaignsTab() {
                                 </select>
                             </div>
                             <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Lead Group</label>
+                                <label className="block text-sm font-medium text-white/70 mb-1">Lead Group</label>
                                 <select
                                     value={form.leadGroupId}
                                     onChange={e => setForm({ ...form, leadGroupId: e.target.value })}
-                                    className="w-full px-3 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none"
+                                    className="w-full px-3 py-2 bg-black/40 border border-white/10 rounded-lg focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 outline-none text-white"
                                 >
                                     <option value="">Select a lead group...</option>
                                     {groups.map(g => (
@@ -667,13 +667,13 @@ function CampaignsTab() {
                                 </select>
                             </div>
                             <div className="flex justify-end gap-2 pt-4">
-                                <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg">
+                                <button onClick={() => setShowForm(false)} className="px-4 py-2 text-sm font-medium text-white/60 hover:bg-white/10 rounded-lg transition-colors">
                                     Cancel
                                 </button>
                                 <button
                                     onClick={handleCreate}
                                     disabled={creating || !form.name || !form.templateId || !form.leadGroupId}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50"
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-purple-600 rounded-lg hover:bg-purple-700 disabled:opacity-50 transition-colors shadow-lg shadow-purple-900/20"
                                 >
                                     {creating && <Loader2 className="w-4 h-4 animate-spin" />}
                                     Create Campaign
@@ -687,68 +687,68 @@ function CampaignsTab() {
             {/* Campaign Details Modal */}
             {selectedCampaign && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm" onClick={() => { setSelectedCampaign(null); setCampaignDetails(null); }}>
-                    <div className="bg-white rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
+                    <div className="bg-slate-900 border border-white/10 rounded-xl shadow-xl w-full max-w-2xl p-6 max-h-[80vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-between mb-4">
-                            <h3 className="text-lg font-semibold text-slate-900">{selectedCampaign.name}</h3>
-                            <button onClick={() => { setSelectedCampaign(null); setCampaignDetails(null); }} className="text-slate-400 hover:text-slate-600">
+                            <h3 className="text-lg font-semibold text-white">{selectedCampaign.name}</h3>
+                            <button onClick={() => { setSelectedCampaign(null); setCampaignDetails(null); }} className="text-white/40 hover:text-white transition-colors">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
                         {loadingDetails ? (
                             <div className="py-8 text-center">
-                                <Loader2 className="w-6 h-6 animate-spin text-slate-300 mx-auto" />
+                                <Loader2 className="w-6 h-6 animate-spin text-white/20 mx-auto" />
                             </div>
                         ) : campaignDetails ? (
                             <div className="space-y-4">
                                 <div className="grid grid-cols-4 gap-4">
-                                    <div className="text-center p-3 bg-slate-50 rounded-lg">
-                                        <p className="text-2xl font-bold text-slate-900">{campaignDetails.totalLeads}</p>
-                                        <p className="text-xs text-slate-500">Total Leads</p>
+                                    <div className="text-center p-3 bg-white/5 border border-white/5 rounded-lg">
+                                        <p className="text-2xl font-bold text-white">{campaignDetails.totalLeads}</p>
+                                        <p className="text-xs text-white/50">Total Leads</p>
                                     </div>
-                                    <div className="text-center p-3 bg-green-50 rounded-lg">
-                                        <p className="text-2xl font-bold text-green-600">{campaignDetails.sentCount}</p>
-                                        <p className="text-xs text-slate-500">Sent</p>
+                                    <div className="text-center p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                        <p className="text-2xl font-bold text-green-400">{campaignDetails.sentCount}</p>
+                                        <p className="text-xs text-white/50">Sent</p>
                                     </div>
-                                    <div className="text-center p-3 bg-red-50 rounded-lg">
-                                        <p className="text-2xl font-bold text-red-600">{campaignDetails.failedCount}</p>
-                                        <p className="text-xs text-slate-500">Failed</p>
+                                    <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+                                        <p className="text-2xl font-bold text-red-400">{campaignDetails.failedCount}</p>
+                                        <p className="text-xs text-white/50">Failed</p>
                                     </div>
-                                    <div className="text-center p-3 bg-blue-50 rounded-lg">
-                                        <p className="text-2xl font-bold text-blue-600">
+                                    <div className="text-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                                        <p className="text-2xl font-bold text-blue-400">
                                             {campaignDetails.totalLeads > 0 ? Math.round((campaignDetails.sentCount / campaignDetails.totalLeads) * 100) : 0}%
                                         </p>
-                                        <p className="text-xs text-slate-500">Progress</p>
+                                        <p className="text-xs text-white/50">Progress</p>
                                     </div>
                                 </div>
 
                                 {campaignDetails.lastError && (
-                                    <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                                    <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-sm text-red-400">
                                         Last Error: {campaignDetails.lastError}
                                     </div>
                                 )}
 
                                 <div>
-                                    <h4 className="text-sm font-semibold text-slate-700 mb-2">Recent Logs</h4>
-                                    <div className="max-h-60 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100">
+                                    <h4 className="text-sm font-semibold text-white/70 mb-2">Recent Logs</h4>
+                                    <div className="max-h-60 overflow-y-auto border border-white/10 rounded-lg divide-y divide-white/5">
                                         {campaignDetails.logs && campaignDetails.logs.length > 0 ? (
                                             campaignDetails.logs.map((log: any) => (
                                                 <div key={log.id} className="p-2 flex items-center justify-between text-sm">
-                                                    <span className="text-slate-600">{log.email}</span>
+                                                    <span className="text-white/60">{log.email}</span>
                                                     <div className="flex items-center gap-2">
                                                         {log.status === 'SENT' ? (
-                                                            <CheckCircle className="w-4 h-4 text-green-500" />
+                                                            <CheckCircle className="w-4 h-4 text-green-400" />
                                                         ) : (
-                                                            <XCircle className="w-4 h-4 text-red-500" />
+                                                            <XCircle className="w-4 h-4 text-red-400" />
                                                         )}
-                                                        <span className="text-xs text-slate-400">
+                                                        <span className="text-xs text-white/40">
                                                             {new Date(log.sentAt).toLocaleTimeString()}
                                                         </span>
                                                     </div>
                                                 </div>
                                             ))
                                         ) : (
-                                            <p className="p-4 text-sm text-slate-500 text-center">No logs yet</p>
+                                            <p className="p-4 text-sm text-white/50 text-center">No logs yet</p>
                                         )}
                                     </div>
                                 </div>
@@ -761,48 +761,48 @@ function CampaignsTab() {
             {/* Campaigns List */}
             {loading ? (
                 <div className="py-12 text-center">
-                    <Loader2 className="w-8 h-8 animate-spin text-slate-300 mx-auto" />
+                    <Loader2 className="w-8 h-8 animate-spin text-white/20 mx-auto" />
                 </div>
             ) : campaigns.length === 0 ? (
-                <div className="py-12 text-center bg-slate-50 rounded-xl border border-dashed border-slate-200">
-                    <Send className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-slate-500">No campaigns yet. Create a template and lead group first.</p>
+                <div className="py-12 text-center bg-white/5 rounded-xl border border-dashed border-white/10">
+                    <Send className="w-12 h-12 text-white/20 mx-auto mb-3" />
+                    <p className="text-white/50">No campaigns yet. Create a template and lead group first.</p>
                 </div>
             ) : (
-                <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden shadow-sm backdrop-blur-sm">
                     <table className="w-full text-sm">
-                        <thead className="bg-slate-50 border-b border-slate-200">
+                        <thead className="bg-white/5 border-b border-white/5">
                             <tr>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Campaign</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Template</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Leads</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Progress</th>
-                                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-500 uppercase">Status</th>
-                                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-500 uppercase">Actions</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase">Campaign</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase">Template</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase">Leads</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase">Progress</th>
+                                <th className="px-4 py-3 text-left text-xs font-semibold text-white/50 uppercase">Status</th>
+                                <th className="px-4 py-3 text-right text-xs font-semibold text-white/50 uppercase">Actions</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-slate-100">
+                        <tbody className="divide-y divide-white/5">
                             {campaigns.map(campaign => (
-                                <tr key={campaign.id} className="hover:bg-slate-50/50">
+                                <tr key={campaign.id} className="hover:bg-white/5 transition-colors">
                                     <td className="px-4 py-3">
                                         <button
                                             onClick={() => viewCampaignDetails(campaign)}
-                                            className="font-medium text-slate-900 hover:text-purple-600"
+                                            className="font-medium text-white hover:text-purple-400 transition-colors"
                                         >
                                             {campaign.name}
                                         </button>
                                     </td>
-                                    <td className="px-4 py-3 text-slate-600">{campaign.template?.name || '-'}</td>
-                                    <td className="px-4 py-3 text-slate-600">{campaign.leadGroup?.name || '-'}</td>
+                                    <td className="px-4 py-3 text-white/60">{campaign.template?.name || '-'}</td>
+                                    <td className="px-4 py-3 text-white/60">{campaign.leadGroup?.name || '-'}</td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center gap-2">
-                                            <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
                                                 <div
                                                     className="h-full bg-purple-500 rounded-full"
                                                     style={{ width: `${campaign.totalLeads > 0 ? (campaign.sentCount / campaign.totalLeads) * 100 : 0}%` }}
                                                 />
                                             </div>
-                                            <span className="text-xs text-slate-500">{campaign.sentCount}/{campaign.totalLeads}</span>
+                                            <span className="text-xs text-white/50">{campaign.sentCount}/{campaign.totalLeads}</span>
                                         </div>
                                     </td>
                                     <td className="px-4 py-3">{getStatusBadge(campaign.status)}</td>
@@ -811,7 +811,7 @@ function CampaignsTab() {
                                             {campaign.status === 'PENDING' || campaign.status === 'PAUSED' ? (
                                                 <button
                                                     onClick={() => handleStart(campaign.id)}
-                                                    className="p-1.5 text-green-600 hover:bg-green-50 rounded"
+                                                    className="p-1.5 text-green-400 hover:bg-green-500/10 rounded transition-colors"
                                                     title="Start"
                                                 >
                                                     <Play className="w-4 h-4" />
@@ -819,7 +819,7 @@ function CampaignsTab() {
                                             ) : campaign.status === 'RUNNING' ? (
                                                 <button
                                                     onClick={() => handlePause(campaign.id)}
-                                                    className="p-1.5 text-yellow-600 hover:bg-yellow-50 rounded"
+                                                    className="p-1.5 text-yellow-400 hover:bg-yellow-500/10 rounded transition-colors"
                                                     title="Pause"
                                                 >
                                                     <Pause className="w-4 h-4" />
@@ -827,7 +827,7 @@ function CampaignsTab() {
                                             ) : null}
                                             <button
                                                 onClick={() => handleDelete(campaign.id)}
-                                                className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded"
+                                                className="p-1.5 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
                                                 title="Delete"
                                             >
                                                 <Trash2 className="w-4 h-4" />

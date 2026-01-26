@@ -153,29 +153,29 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
 
 
     return (
-        <div className="flex h-[calc(100vh-64px)] bg-white overflow-hidden">
+        <div className="flex h-[calc(100vh-64px)] bg-slate-900/40 overflow-hidden border-t border-white/5">
             {/* Left Sidebar: Threads List */}
-            <div className="w-80 border-r border-slate-200 flex flex-col bg-white">
-                <div className="p-4 border-b border-slate-100">
+            <div className="w-80 border-r border-white/5 flex flex-col bg-transparent">
+                <div className="p-4 border-b border-white/5">
                     <div className="flex items-center justify-between mb-4 px-1">
-                        <h2 className="text-lg font-bold text-slate-900">
-                            Inbox <span className="text-slate-400 font-normal text-sm ml-1">{threads.length}</span>
+                        <h2 className="text-lg font-bold text-white">
+                            Inbox <span className="text-white/40 font-normal text-sm ml-1">{threads.length}</span>
                         </h2>
                         <button
                             onClick={handleSync}
                             disabled={isSyncing}
-                            className={cn("p-2 rounded-lg hover:bg-slate-100 text-slate-500 transition-all", isSyncing && "animate-spin text-blue-500")}
+                            className={cn("p-2 rounded-lg hover:bg-white/5 text-white/50 transition-all", isSyncing && "animate-spin text-blue-400")}
                             title="Sync Emails"
                         >
                             <RefreshCw className="w-4 h-4" />
                         </button>
                     </div>
                     <div className="relative">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
                         <input
                             type="text"
                             placeholder="Search emails..."
-                            className="w-full pl-9 pr-4 py-2 text-sm bg-slate-50 border-none rounded-lg focus:ring-1 focus:ring-blue-500 outline-none text-slate-900 placeholder:text-slate-400"
+                            className="w-full pl-9 pr-4 py-2 text-sm bg-black/40 border border-white/5 rounded-lg focus:ring-1 focus:ring-blue-500/50 outline-none text-white placeholder:text-white/20"
                         />
                     </div>
                 </div>
@@ -187,7 +187,6 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                             onClick={() => {
                                 console.log('[ThreadClick] Setting selectedThreadId to:', thread.id);
                                 setSelectedThreadId(thread.id);
-                                // Mark as read when clicked (only if thread.id exists and unread)
                                 if (thread.id && !thread.read) {
                                     markLeadAsRead(thread.id);
                                     setThreads(prev => prev.map(t =>
@@ -196,24 +195,24 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                                 }
                             }}
                             className={cn(
-                                "p-4 border-b border-slate-50 cursor-pointer hover:bg-slate-50 transition-colors group",
-                                selectedThreadId === thread.id ? "bg-blue-50/50 hover:bg-blue-50/60" : "",
-                                !thread.read ? "bg-white" : "bg-white/50"
+                                "p-4 border-b border-white/5 cursor-pointer hover:bg-white/5 transition-colors group",
+                                selectedThreadId === thread.id ? "bg-blue-500/10 hover:bg-blue-500/20" : "",
+                                !thread.read ? "bg-white/5" : "bg-transparent"
                             )}
                         >
                             <div className="flex justify-between items-start mb-1">
                                 <div className="flex items-center gap-2">
-                                    {!thread.read && <div className="w-2 h-2 rounded-full bg-blue-500"></div>}
-                                    <h3 className={cn("font-medium text-sm text-slate-900", !thread.read ? "font-bold" : "")}>{thread.leadName}</h3>
+                                    {!thread.read && <div className="w-2 h-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>}
+                                    <h3 className={cn("font-medium text-sm text-white", !thread.read ? "font-bold" : "")}>{thread.leadName}</h3>
                                 </div>
-                                <span className="text-[10px] text-slate-400 font-medium">{thread.time}</span>
+                                <span className="text-[10px] text-white/40 font-medium">{thread.time}</span>
                             </div>
-                            <p className="text-xs text-slate-600 font-medium truncate mb-0.5">{thread.subject}</p>
-                            <p className="text-xs text-slate-400 truncate">{thread.lastMessagePreview}</p>
+                            <p className="text-xs text-white/60 font-medium truncate mb-0.5">{thread.subject}</p>
+                            <p className="text-xs text-white/40 truncate">{thread.lastMessagePreview}</p>
 
                             <div className="flex gap-2 mt-2">
-                                {thread.status === 'Interested' && <span className="px-2 py-0.5 bg-green-100 text-green-700 text-[10px] rounded-full font-medium">Interested</span>}
-                                {thread.status === 'Not Interested' && <span className="px-2 py-0.5 bg-red-100 text-red-700 text-[10px] rounded-full font-medium">Not Interested</span>}
+                                {thread.status === 'Interested' && <span className="px-2 py-0.5 bg-green-500/10 text-green-400 text-[10px] rounded-full font-medium border border-green-500/20">Interested</span>}
+                                {thread.status === 'Not Interested' && <span className="px-2 py-0.5 bg-red-500/10 text-red-400 text-[10px] rounded-full font-medium border border-red-500/20">Not Interested</span>}
                             </div>
                         </div>
                     ))}
@@ -221,36 +220,36 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
             </div>
 
             {/* Middle: Chat View */}
-            <div className="flex-1 flex flex-col bg-slate-50/50">
+            <div className="flex-1 flex flex-col bg-black/20">
                 {selectedThread ? (
                     <>
                         {/* Chat Header */}
-                        <div className="h-16 border-b border-slate-200 bg-white flex items-center justify-between px-6 flex-shrink-0">
+                        <div className="h-16 border-b border-white/5 bg-slate-900/50 flex items-center justify-between px-6 flex-shrink-0 backdrop-blur-sm">
                             <div className="flex items-center gap-3">
-                                <div className={cn("h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold", selectedThread.avatarColor)}>
+                                <div className={cn("h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-lg", selectedThread.avatarColor)}>
                                     {selectedThread.leadName.charAt(0)}
                                 </div>
                                 <div>
-                                    <h2 className="text-sm font-bold text-slate-900">{selectedThread.subject}</h2>
-                                    <p className="text-xs text-slate-500">with {selectedThread.leadName} &lt;{selectedThread.leadEmail}&gt;</p>
+                                    <h2 className="text-sm font-bold text-white">{selectedThread.subject}</h2>
+                                    <p className="text-xs text-white/50">with {selectedThread.leadName} &lt;{selectedThread.leadEmail}&gt;</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => handleMarkStatus('COMPLETED')}
-                                    className="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                    className="p-2 text-white/40 hover:text-green-400 hover:bg-green-500/10 rounded-lg transition-colors"
                                     title="Mark as Resolved"
                                 >
                                     <CheckCircle2 className="w-5 h-5" />
                                 </button>
                                 <button
                                     onClick={handleDelete}
-                                    className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                    className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                                     title="Delete Conversation"
                                 >
                                     <Trash2 className="w-5 h-5" />
                                 </button>
-                                <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">
+                                <button className="p-2 text-white/40 hover:text-white hover:bg-white/10 rounded-lg transition-colors">
                                     <MoreHorizontal className="w-5 h-5" />
                                 </button>
                             </div>
@@ -258,20 +257,20 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
 
                         <div className="flex-1 overflow-y-auto p-6 space-y-6">
                             {messages.length === 0 ? (
-                                <div className="text-center text-slate-400 text-sm mt-10">No messages yet.</div>
+                                <div className="text-center text-white/30 text-sm mt-10">No messages yet.</div>
                             ) : (
                                 messages.map((msg) => (
                                     <div key={msg.id} className={cn("flex gap-4 max-w-2xl group", msg.sender === 'us' ? "ml-auto flex-row-reverse" : "")}>
                                         <div className={cn(
-                                            "h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold",
-                                            msg.sender === 'us' ? "bg-blue-600" : selectedThread.avatarColor
+                                            "h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center text-white text-xs font-bold shadow-lg",
+                                            msg.sender === 'us' ? "bg-blue-600 shadow-blue-900/50" : selectedThread.avatarColor
                                         )}>
                                             {msg.sender === 'us' ? "ME" : selectedThread.leadName.charAt(0)}
                                         </div>
                                         <div className={cn(msg.sender === 'us' ? "text-right" : "", "relative")}>
                                             <div className={cn("flex items-baseline gap-2 mb-1", msg.sender === 'us' ? "justify-end" : "")}>
-                                                <span className={cn("font-bold text-sm text-slate-900")}>{msg.sender === 'us' ? "You" : selectedThread.leadName}</span>
-                                                <span className="text-xs text-slate-400">{msg.timestamp}</span>
+                                                <span className={cn("font-bold text-sm text-white")}>{msg.sender === 'us' ? "You" : selectedThread.leadName}</span>
+                                                <span className="text-xs text-white/40">{msg.timestamp}</span>
                                                 <button
                                                     onClick={async (e) => {
                                                         e.stopPropagation();
@@ -280,7 +279,7 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                                                             setMessages(messages.filter(m => m.id !== msg.id));
                                                         }
                                                     }}
-                                                    className="opacity-0 group-hover:opacity-100 p-1 text-slate-400 hover:text-red-500 transition-opacity"
+                                                    className="opacity-0 group-hover:opacity-100 p-1 text-white/40 hover:text-red-400 transition-opacity"
                                                     title="Delete message"
                                                 >
                                                     <Trash2 className="w-3 h-3" />
@@ -289,8 +288,8 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                                             <div className={cn(
                                                 "p-4 rounded-xl shadow-sm text-sm leading-relaxed",
                                                 msg.sender === 'us'
-                                                    ? "bg-blue-600 text-white rounded-tr-sm text-left"
-                                                    : "bg-white border border-slate-200 text-slate-700 rounded-tl-sm"
+                                                    ? "bg-blue-600 text-white rounded-tr-sm text-left shadow-blue-900/20"
+                                                    : "bg-white/10 border border-white/5 text-white/90 rounded-tl-sm backdrop-blur-sm"
                                             )}>
                                                 <p>{msg.content}</p>
                                             </div>
@@ -301,7 +300,7 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                         </div>
 
                         {/* Reply Box */}
-                        <div className="p-4 bg-white border-t border-slate-200 flex-shrink-0">
+                        <div className="p-4 bg-slate-900/50 border-t border-white/5 flex-shrink-0 backdrop-blur-sm">
                             <RichTextEditor
                                 content={replyBody}
                                 onChange={setReplyBody}
@@ -311,22 +310,22 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                             />
                             <div className="flex items-center justify-between mt-3">
                                 <div className="flex gap-2">
-                                    <button className="text-slate-400 hover:text-blue-500 transition-colors p-1.5 rounded hover:bg-slate-100">
+                                    <button className="text-white/40 hover:text-blue-400 transition-colors p-1.5 rounded hover:bg-white/10">
                                         <PaperclipIcon className="w-4 h-4" />
                                     </button>
-                                    <button className="text-slate-400 hover:text-yellow-500 transition-colors p-1.5 rounded hover:bg-slate-100">
+                                    <button className="text-white/40 hover:text-yellow-400 transition-colors p-1.5 rounded hover:bg-white/10">
                                         <SmileIcon className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={handleSaveTemplate}
-                                        className="text-slate-400 hover:text-emerald-600 transition-colors p-1.5 rounded hover:bg-slate-100"
+                                        className="text-white/40 hover:text-emerald-400 transition-colors p-1.5 rounded hover:bg-white/10"
                                         title="Save as Template"
                                     >
                                         <Save className="w-4 h-4" />
                                     </button>
                                     <button
                                         onClick={handleMarkUnread}
-                                        className="text-slate-400 hover:text-blue-600 transition-colors p-1.5 rounded hover:bg-slate-100"
+                                        className="text-white/40 hover:text-blue-400 transition-colors p-1.5 rounded hover:bg-white/10"
                                         title="Mark as Unread"
                                     >
                                         <Mail className="w-4 h-4" />
@@ -335,7 +334,7 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                                 <button
                                     onClick={handleSendReply}
                                     disabled={isPending || !replyBody.trim()}
-                                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:from-blue-700 hover:to-purple-700 transition-all shadow-md shadow-blue-500/20 flex items-center gap-2 disabled:opacity-50"
+                                    className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-500 transition-all shadow-lg shadow-blue-900/30 flex items-center gap-2 disabled:opacity-50"
                                 >
                                     {isPending ? 'Sending...' : 'Send Reply'} <Reply className="w-3 h-3" />
                                 </button>
@@ -343,7 +342,7 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                         </div>
                     </>
                 ) : (
-                    <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+                    <div className="flex-1 flex flex-col items-center justify-center text-white/30">
                         <Mail className="w-12 h-12 mb-4 opacity-20" />
                         <p>Select a conversation to start chatting</p>
                     </div>
@@ -352,19 +351,19 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
 
             {/* Right Sidebar: Lead Details */}
             {selectedThread && (
-                <div className="w-72 bg-white border-l border-slate-200 p-6 flex-col hidden xl:flex">
+                <div className="w-72 bg-transparent border-l border-white/5 p-6 flex-col hidden xl:flex">
                     <div className="flex flex-col items-center text-center mb-6">
-                        <div className={cn("h-20 w-20 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-lg", selectedThread.avatarColor)}>
+                        <div className={cn("h-20 w-20 rounded-full flex items-center justify-center text-white text-2xl font-bold mb-3 shadow-xl", selectedThread.avatarColor)}>
                             {selectedThread.leadName.charAt(0)}
                         </div>
-                        <h2 className="text-lg font-bold text-slate-900">{selectedThread.leadName}</h2>
-                        <p className="text-sm text-slate-500">{selectedThread.leadCompany}</p>
+                        <h2 className="text-lg font-bold text-white">{selectedThread.leadName}</h2>
+                        <p className="text-sm text-white/50">{selectedThread.leadCompany}</p>
 
                         <div className="flex gap-2 mt-4">
-                            <button className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors">
+                            <button className="p-2 border border-white/10 rounded-lg hover:bg-white/5 text-white/60 transition-colors">
                                 <Mail className="w-4 h-4" />
                             </button>
-                            <button className="p-2 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600 transition-colors">
+                            <button className="p-2 border border-white/10 rounded-lg hover:bg-white/5 text-white/60 transition-colors">
                                 <Phone className="w-4 h-4" />
                             </button>
                         </div>
@@ -372,51 +371,51 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
 
                     <div className="space-y-6">
                         <div>
-                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Lead Info</h3>
+                            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Lead Info</h3>
                             <div className="space-y-3">
                                 <div className="flex items-center gap-3 text-sm">
-                                    <Mail className="w-4 h-4 text-slate-400" />
-                                    <span className="text-slate-700 truncate">{selectedThread.leadEmail}</span>
+                                    <Mail className="w-4 h-4 text-white/40" />
+                                    <span className="text-white/80 truncate">{selectedThread.leadEmail}</span>
                                 </div>
                                 <div className="flex items-center gap-3 text-sm">
-                                    <Clock className="w-4 h-4 text-slate-400" />
-                                    <span className="text-slate-700">{selectedThread.time} (Last Contact)</span>
+                                    <Clock className="w-4 h-4 text-white/40" />
+                                    <span className="text-white/80">{selectedThread.time} (Last Contact)</span>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Campaign Metrics</h3>
+                            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Campaign Metrics</h3>
                             <div className="grid grid-cols-2 gap-3">
-                                <div className="p-3 bg-slate-50 rounded-lg text-center">
-                                    <p className="text-xs text-slate-500">Opens</p>
-                                    <p className="font-bold text-slate-900">{selectedThread.stats.opens}</p>
+                                <div className="p-3 bg-white/5 rounded-lg text-center border border-white/5">
+                                    <p className="text-xs text-white/50">Opens</p>
+                                    <p className="font-bold text-white">{selectedThread.stats.opens}</p>
                                 </div>
-                                <div className="p-3 bg-slate-50 rounded-lg text-center">
-                                    <p className="text-xs text-slate-500">Clicks</p>
-                                    <p className="font-bold text-slate-900">{selectedThread.stats.clicks}</p>
+                                <div className="p-3 bg-white/5 rounded-lg text-center border border-white/5">
+                                    <p className="text-xs text-white/50">Clicks</p>
+                                    <p className="font-bold text-white">{selectedThread.stats.clicks}</p>
                                 </div>
                             </div>
                         </div>
 
                         <div>
-                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Templates</h3>
+                            <h3 className="text-xs font-bold text-white/40 uppercase tracking-wider mb-3">Templates</h3>
                             <div className="space-y-2">
                                 {templates.map(t => (
                                     <div
                                         key={t.id}
-                                        className="w-full text-left p-2.5 rounded-lg border border-slate-100 hover:border-slate-300 hover:bg-slate-50 transition-colors group flex items-center justify-between"
+                                        className="w-full text-left p-2.5 rounded-lg border border-white/5 hover:border-white/20 hover:bg-white/5 transition-colors group flex items-center justify-between bg-black/20"
                                     >
                                         <button
                                             onClick={() => handleUseTemplate(t.content)}
                                             className="flex items-center gap-2 flex-1 overflow-hidden"
                                         >
-                                            <FileText className="w-3 h-3 text-slate-400 group-hover:text-blue-500 flex-shrink-0" />
-                                            <span className="text-sm text-slate-700 font-medium truncate">{t.name}</span>
+                                            <FileText className="w-3 h-3 text-white/40 group-hover:text-blue-400 flex-shrink-0" />
+                                            <span className="text-sm text-white/80 font-medium truncate">{t.name}</span>
                                         </button>
                                         <button
                                             onClick={(e) => handleDeleteTemplate(e, t.id)}
-                                            className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity p-1"
+                                            className="text-white/30 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity p-1"
                                             title="Delete Template"
                                         >
                                             <Trash2 className="w-3 h-3" />
@@ -424,8 +423,8 @@ export const Unibox = ({ initialThreads }: { initialThreads: Thread[] }) => {
                                     </div>
                                 ))}
                                 {templates.length === 0 && (
-                                    <div className="text-center p-4 border border-dashed border-slate-200 rounded-lg bg-slate-50">
-                                        <p className="text-xs text-slate-400">No templates yet</p>
+                                    <div className="text-center p-4 border border-dashed border-white/10 rounded-lg bg-white/5">
+                                        <p className="text-xs text-white/40">No templates yet</p>
                                     </div>
                                 )}
                             </div>

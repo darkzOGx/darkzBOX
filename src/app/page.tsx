@@ -15,11 +15,11 @@ export default async function Home() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Dashboard</h1>
-                    <p className="text-slate-500 text-sm mt-1">Overview of your campaign performance</p>
+                    <h1 className="text-2xl font-bold text-white">Dashboard</h1>
+                    <p className="text-white/50 text-sm mt-1">Overview of your campaign performance</p>
                 </div>
                 <div className="flex gap-2">
-                    <select className="bg-white border rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-sm">
+                    <select className="bg-black/40 text-white border border-white/10 rounded-lg text-sm px-3 py-2 outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 shadow-sm appearance-none cursor-pointer hover:bg-black/60 transition-colors">
                         <option>Last 7 days</option>
                         <option>Last 30 days</option>
                         <option>All time</option>
@@ -33,14 +33,14 @@ export default async function Home() {
             {/* Charts & Activity */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 {/* Main Chart */}
-                <div className="lg:col-span-2 bg-white p-6 rounded-xl border border-slate-200 shadow-sm min-h-[400px]">
+                <div className="lg:col-span-2 bg-white/5 p-6 rounded-xl border border-white/10 shadow-sm backdrop-blur-sm min-h-[400px]">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="font-semibold text-slate-900 text-lg">Email Volume</h3>
-                            <p className="text-slate-500 text-xs">Daily sent emails over time</p>
+                            <h3 className="font-semibold text-white text-lg">Email Volume</h3>
+                            <p className="text-white/50 text-xs">Daily sent emails over time</p>
                         </div>
-                        <div className="p-2 bg-slate-50 rounded-lg">
-                            <BarChart3 className="w-5 h-5 text-slate-400" />
+                        <div className="p-2 bg-white/5 rounded-lg">
+                            <BarChart3 className="w-5 h-5 text-white/40" />
                         </div>
                     </div>
                     <div className="h-80 w-full">

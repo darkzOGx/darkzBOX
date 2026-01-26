@@ -163,9 +163,9 @@ export function RichTextEditor({
             disabled={disabled}
             title={title}
             className={cn(
-                "p-1.5 rounded hover:bg-slate-100 transition-colors",
-                active && "bg-slate-200 text-blue-600",
-                disabled && "opacity-40 cursor-not-allowed hover:bg-transparent"
+                "p-1.5 rounded hover:bg-white/10 transition-colors text-white/70",
+                active && "bg-white/20 text-blue-400",
+                disabled && "opacity-30 cursor-not-allowed hover:bg-transparent"
             )}
         >
             {children}
@@ -173,11 +173,11 @@ export function RichTextEditor({
     );
 
     return (
-        <div className={cn("border border-slate-200 rounded-lg overflow-hidden", className)}>
+        <div className={cn("border border-white/10 rounded-lg overflow-hidden bg-black/20 backdrop-blur-sm", className)}>
             {/* Toolbar */}
-            <div className="flex flex-wrap items-center gap-0.5 p-2 border-b border-slate-200 bg-slate-50">
+            <div className="flex flex-wrap items-center gap-0.5 p-2 border-b border-white/10 bg-white/5">
                 {/* Text formatting */}
-                <div className="flex items-center gap-0.5 pr-2 border-r border-slate-200">
+                <div className="flex items-center gap-0.5 pr-2 border-r border-white/10">
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleBold().run()}
                         active={editor.isActive('bold')}
@@ -213,7 +213,7 @@ export function RichTextEditor({
                 </div>
 
                 {/* Lists & Indentation */}
-                <div className="flex items-center gap-0.5 px-2 border-r border-slate-200">
+                <div className="flex items-center gap-0.5 px-2 border-r border-white/10">
                     <ToolbarButton
                         onClick={() => editor.chain().focus().toggleBulletList().run()}
                         active={editor.isActive('bulletList')}
@@ -247,7 +247,7 @@ export function RichTextEditor({
                 </div>
 
                 {/* Alignment */}
-                <div className="flex items-center gap-0.5 px-2 border-r border-slate-200">
+                <div className="flex items-center gap-0.5 px-2 border-r border-white/10">
                     <ToolbarButton
                         onClick={() => editor.chain().focus().setTextAlign('left').run()}
                         active={editor.isActive({ textAlign: 'left' })}
@@ -275,7 +275,7 @@ export function RichTextEditor({
                 </div>
 
                 {/* Link */}
-                <div className="flex items-center gap-0.5 px-2 border-r border-slate-200 relative">
+                <div className="flex items-center gap-0.5 px-2 border-r border-white/10 relative">
                     <ToolbarButton
                         onClick={() => {
                             if (editor.isActive('link')) {
@@ -291,19 +291,19 @@ export function RichTextEditor({
                         <LinkIcon className="w-4 h-4" />
                     </ToolbarButton>
                     {showLinkInput && !isHtmlMode && (
-                        <div className="absolute top-full left-0 mt-1 z-10 bg-white border border-slate-200 rounded-lg shadow-lg p-2 flex gap-2">
+                        <div className="absolute top-full left-0 mt-1 z-10 bg-slate-900 border border-white/10 rounded-lg shadow-xl p-2 flex gap-2">
                             <input
                                 type="text"
                                 placeholder="https://..."
                                 value={linkUrl}
                                 onChange={(e) => setLinkUrl(e.target.value)}
                                 onKeyDown={(e) => e.key === 'Enter' && setLink()}
-                                className="px-2 py-1 text-sm border border-slate-200 rounded outline-none focus:border-blue-500 w-48"
+                                className="px-2 py-1 text-sm bg-black/40 border border-white/10 rounded outline-none focus:border-blue-500 w-48 text-white"
                                 autoFocus
                             />
                             <button
                                 onClick={setLink}
-                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
                             >
                                 Add
                             </button>
@@ -313,7 +313,7 @@ export function RichTextEditor({
 
                 {/* Variables */}
                 {showVariables && variables.length > 0 && (
-                    <div className="flex items-center gap-0.5 px-2 border-r border-slate-200 relative">
+                    <div className="flex items-center gap-0.5 px-2 border-r border-white/10 relative">
                         <ToolbarButton
                             onClick={() => setShowVariablesDropdown(!showVariablesDropdown)}
                             title="Insert Variable"
@@ -321,15 +321,15 @@ export function RichTextEditor({
                             <Variable className="w-4 h-4" />
                         </ToolbarButton>
                         {showVariablesDropdown && (
-                            <div className="absolute top-full left-0 mt-1 z-10 bg-white border border-slate-200 rounded-lg shadow-lg py-1 min-w-[160px]">
+                            <div className="absolute top-full left-0 mt-1 z-10 bg-slate-900 border border-white/10 rounded-lg shadow-xl py-1 min-w-[160px]">
                                 {variables.map((opt) => (
                                     <button
                                         key={opt.value}
                                         onClick={() => insertVariable(opt.value)}
-                                        className="w-full px-3 py-1.5 text-left text-sm hover:bg-slate-100 flex justify-between items-center"
+                                        className="w-full px-3 py-1.5 text-left text-sm hover:bg-white/10 flex justify-between items-center text-white/80"
                                     >
                                         <span>{opt.label}</span>
-                                        <code className="text-xs text-slate-400">{opt.value}</code>
+                                        <code className="text-xs text-white/40">{opt.value}</code>
                                     </button>
                                 ))}
                             </div>
@@ -346,7 +346,7 @@ export function RichTextEditor({
                     >
                         <Code className="w-4 h-4" />
                     </ToolbarButton>
-                    <div className="w-px h-4 bg-slate-200 mx-1" />
+                    <div className="w-px h-4 bg-white/10 mx-1" />
                     <ToolbarButton
                         onClick={() => editor.chain().focus().undo().run()}
                         disabled={isHtmlMode}
@@ -371,13 +371,13 @@ export function RichTextEditor({
                     value={htmlSource}
                     onChange={(e) => handleHtmlSourceChange(e.target.value)}
                     placeholder={placeholder}
-                    className="w-full p-4 font-mono text-sm bg-slate-900 text-green-400 focus:outline-none resize-none"
+                    className="w-full p-4 font-mono text-sm bg-black/40 text-green-400 focus:outline-none resize-none"
                     style={{ minHeight }}
                 />
             ) : (
                 <EditorContent
                     editor={editor}
-                    className="p-4"
+                    className="p-4 text-white/90 [&_.ProseMirror]:prose-invert [&_.ProseMirror_p]:text-white/80 [&_.ProseMirror_h1]:text-white [&_.ProseMirror_h2]:text-white [&_.ProseMirror_h3]:text-white [&_.ProseMirror_a]:text-blue-400"
                 />
             )}
         </div>

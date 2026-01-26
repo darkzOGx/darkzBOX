@@ -37,34 +37,34 @@ export function RecentActivity({ initialData }: RecentActivityProps) {
 
     return (
         <>
-            <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col h-full">
-                <h3 className="font-semibold text-slate-900 text-lg mb-6">Live Activity</h3>
+            <div className="bg-white/5 p-6 rounded-xl border border-white/10 shadow-sm flex flex-col h-full backdrop-blur-sm">
+                <h3 className="font-semibold text-white text-lg mb-6">Live Activity</h3>
                 <div className="space-y-6 overflow-y-auto flex-1 pr-2 min-h-[300px]">
                     {initialData.length === 0 ? (
-                        <p className="text-slate-500 text-sm">No recent activity.</p>
+                        <p className="text-white/50 text-sm">No recent activity.</p>
                     ) : (
                         initialData.map((item, i) => (
-                            <div 
-                                key={i} 
+                            <div
+                                key={i}
                                 onClick={() => handleItemClick(item)}
-                                className="flex gap-3 group cursor-pointer hover:bg-slate-50 p-2 -mx-2 rounded-lg transition-colors"
+                                className="flex gap-3 group cursor-pointer hover:bg-white/5 p-2 -mx-2 rounded-lg transition-colors"
                             >
                                 <div className={cn("h-8 w-8 rounded-full flex-shrink-0 flex items-center justify-center text-[10px] font-bold uppercase", item.color)}>
                                     {item.user.slice(0, 2)}
                                 </div>
                                 <div className="min-w-0">
-                                    <p className="text-sm text-slate-900 truncate">
-                                        <span className="font-medium">{item.user}</span> {item.action} <span className="text-slate-600">{item.target}</span>
+                                    <p className="text-sm text-white truncate">
+                                        <span className="font-medium">{item.user}</span> {item.action} <span className="text-white/60">{item.target}</span>
                                     </p>
-                                    <p className="text-xs text-slate-400 mt-0.5">{item.time}</p>
+                                    <p className="text-xs text-white/40 mt-0.5">{item.time}</p>
                                 </div>
                             </div>
                         ))
                     )}
                 </div>
-                <button 
+                <button
                     onClick={() => setIsModalOpen(true)}
-                    className="mt-6 w-full py-2 text-sm text-center text-slate-500 hover:text-slate-900 font-medium border-t border-slate-100 transition-colors"
+                    className="mt-6 w-full py-2 text-sm text-center text-white/50 hover:text-white font-medium border-t border-white/5 transition-colors"
                 >
                     View All Activity
                 </button>

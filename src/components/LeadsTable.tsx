@@ -66,24 +66,24 @@ export function LeadsTable({ initialLeads }: { initialLeads: Lead[] }) {
             {/* Filters */}
             <div className="flex gap-4">
                 <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+                    <Search className="absolute left-3 top-2.5 h-4 w-4 text-white/40" />
                     <input
                         type="text"
                         placeholder="Search leads by name, email, or company..."
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
-                        className="w-full pl-9 pr-4 py-2 text-sm bg-white border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all shadow-sm"
+                        className="w-full pl-9 pr-4 py-2 text-sm bg-black/40 border border-white/10 rounded-lg text-white placeholder-white/20 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500/50 outline-none transition-all shadow-sm"
                     />
                 </div>
-                <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-600 text-sm font-medium hover:bg-slate-50 flex items-center gap-2 shadow-sm">
+                <button className="px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white text-sm font-medium hover:bg-white/10 flex items-center gap-2 shadow-sm transition-colors">
                     <Filter className="w-4 h-4" />
                     Filter
                 </button>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+            <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden shadow-sm backdrop-blur-sm">
                 <table className="w-full text-sm text-left">
-                    <thead className="bg-slate-50 text-slate-500 font-medium border-b border-slate-200">
+                    <thead className="bg-white/5 text-white/50 font-medium border-b border-white/10">
                         <tr>
                             <th className="px-6 py-4">Name</th>
                             <th className="px-6 py-4">Email</th>
@@ -93,55 +93,55 @@ export function LeadsTable({ initialLeads }: { initialLeads: Lead[] }) {
                             <th className="px-6 py-4 text-right">Actions</th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-100">
+                    <tbody className="divide-y divide-white/5">
                         {filteredLeads.length === 0 ? (
-                            <tr><td colSpan={6} className="text-center py-8 text-slate-500">No leads found.</td></tr>
+                            <tr><td colSpan={6} className="text-center py-8 text-white/50">No leads found.</td></tr>
                         ) : filteredLeads.map((lead) => (
-                            <tr 
-                                key={lead.id} 
-                                className="hover:bg-slate-50/50 transition-colors group cursor-default"
+                            <tr
+                                key={lead.id}
+                                className="hover:bg-white/5 transition-colors group cursor-default"
                                 onClick={() => handleRowClick(lead.id)}
                             >
-                                <td className="px-6 py-4 font-medium text-slate-900">
+                                <td className="px-6 py-4 font-medium text-white">
                                     {(lead.firstName || lead.lastName) ? `${lead.firstName || ''} ${lead.lastName || ''}`.trim() : '-'}
                                 </td>
-                                <td className="px-6 py-4 text-slate-600">{lead.email}</td>
-                                <td className="px-6 py-4 text-slate-600">{lead.companyName || '-'}</td>
+                                <td className="px-6 py-4 text-white/60">{lead.email}</td>
+                                <td className="px-6 py-4 text-white/60">{lead.companyName || '-'}</td>
                                 <td className="px-6 py-4">
                                     {lead.campaign ? (
-                                        <Link 
-                                            href={`/campaigns/${lead.campaign.id}`} 
-                                            className="text-blue-600 hover:underline"
+                                        <Link
+                                            href={`/campaigns/${lead.campaign.id}`}
+                                            className="text-blue-400 hover:text-blue-300 hover:underline"
                                             onClick={(e) => e.stopPropagation()}
                                         >
                                             {lead.campaign.name}
                                         </Link>
                                     ) : (
-                                        <span className="text-slate-400 italic">Unassigned</span>
+                                        <span className="text-white/40 italic">Unassigned</span>
                                     )}
                                 </td>
                                 <td className="px-6 py-4">
                                     <span className={cn("px-2.5 py-1 rounded-full text-xs font-medium border uppercase tracking-wider",
-                                        lead.status === 'REPLIED' ? 'bg-green-50 text-green-700 border-green-200' :
-                                            lead.status === 'CONTACTED' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                                                lead.status === 'BOUNCED' ? 'bg-red-50 text-red-700 border-red-200' :
-                                                    'bg-slate-50 text-slate-500 border-slate-200'
+                                        lead.status === 'REPLIED' ? 'bg-green-500/10 text-green-400 border-green-500/20' :
+                                            lead.status === 'CONTACTED' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
+                                                lead.status === 'BOUNCED' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
+                                                    'bg-white/5 text-white/50 border-white/10'
                                     )}>
                                         {lead.status}
                                     </span>
                                 </td>
                                 <td className="px-6 py-4 text-right">
                                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button 
+                                        <button
                                             onClick={(e) => handleSendEmail(lead.id, e)}
-                                            className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" 
+                                            className="p-2 text-white/40 hover:text-blue-400 hover:bg-blue-500/10 rounded-lg transition-colors"
                                             title="Send Email"
                                         >
                                             <Mail className="w-4 h-4" />
                                         </button>
                                         <button
                                             onClick={(e) => handleDelete(lead.id, e)}
-                                            className="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-2 text-white/40 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                                             title="Delete"
                                         >
                                             <Trash2 className="w-4 h-4" />
@@ -153,7 +153,7 @@ export function LeadsTable({ initialLeads }: { initialLeads: Lead[] }) {
                     </tbody>
                 </table>
             </div>
-            <div className="text-xs text-slate-400 text-center">
+            <div className="text-xs text-white/40 text-center">
                 Showing {filteredLeads.length} of {initialLeads.length} leads
             </div>
         </div>

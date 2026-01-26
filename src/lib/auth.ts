@@ -50,17 +50,20 @@ export const authOptions: NextAuthOptions = {
             return session;
         },
         async signIn({ user, account, profile }) {
-            // Allow credentials provider to sign in
+            // Allow credentials provider to sign in without any DB checks
             if (account?.provider === "credentials") {
                 return true;
             }
-            
+
             if (account?.provider === "google") {
                 // Intercept the sign-in to create/update the EmailAccount
                 // We are using NextAuth purely as a "Connect Account" mechanism here
 
                 const workspace = await prisma.workspace.findFirst(); // Default workspace
-                if (!workspace) return false;
+                if (!workspace) {
+                    console.error("No workspace found for Google OAuth");
+                    return "/settings?error=NoWorkspace";
+                }
 
                 // Upsert the EmailAccount based on the email
                 await prisma.emailAccount.upsert({

@@ -13,7 +13,7 @@ export function EmailVolumeChart({ data }: EmailVolumeChartProps) {
     if (!data || data.length === 0) {
         return (
             <div className="flex items-center justify-center h-full">
-                <p className="text-slate-400 text-sm">No data available</p>
+                <p className="text-white/40 text-sm">No data available</p>
             </div>
         )
     }
@@ -41,17 +41,17 @@ export function EmailVolumeChart({ data }: EmailVolumeChartProps) {
                     tickFormatter={(value) => `${value}`}
                 />
                 <Tooltip
-                    cursor={{ fill: '#f1f5f9' }}
+                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
                     content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                             return (
-                                <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-lg">
+                                <div className="rounded-lg border border-white/10 bg-slate-900 p-3 shadow-lg">
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-xs font-medium text-slate-500">
+                                        <span className="text-xs font-medium text-white/50">
                                             {label ? new Date(label).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' }) : ''}
                                         </span>
-                                        <span className="text-lg font-bold text-slate-900">
-                                            {payload[0].value} <span className="text-xs font-normal text-slate-500">emails</span>
+                                        <span className="text-lg font-bold text-white">
+                                            {payload[0].value} <span className="text-xs font-normal text-white/50">emails</span>
                                         </span>
                                     </div>
                                 </div>
@@ -62,7 +62,7 @@ export function EmailVolumeChart({ data }: EmailVolumeChartProps) {
                 />
                 <Bar
                     dataKey="sent"
-                    fill="#3b82f6"
+                    fill="#60a5fa"
                     radius={[4, 4, 0, 0]}
                     maxBarSize={50}
                 />
