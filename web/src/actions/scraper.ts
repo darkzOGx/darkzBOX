@@ -41,7 +41,7 @@ export async function runScraperAction(formData: FormData) {
         // Auto-dork mode
         const dork = await getRandomDork(platform);
         if (!dork) {
-            return { success: false, error: 'Could not load dorks. Please ensure dork files exist.' };
+            return { success: false, error: 'Could not load dorks. Please ensure dork files exist.', data: [], totalFound: 0, queryUsed: '' };
         }
         targetQuery = dork;
     }
@@ -59,7 +59,7 @@ export async function runScraperAction(formData: FormData) {
         return { ...response, queryUsed: targetQuery };
 
     } catch (error: any) {
-        return { success: false, error: error.message, queryUsed: targetQuery };
+        return { success: false, error: error.message, queryUsed: targetQuery, data: [], totalFound: 0 };
     }
 }
 
