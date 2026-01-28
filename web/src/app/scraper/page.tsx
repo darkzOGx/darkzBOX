@@ -1,6 +1,8 @@
 import { getCampaigns } from '@/actions';
 import ScraperInterface from './client';
 
+export const dynamic = 'force-dynamic';
+
 export default async function ScraperPage() {
     // Fetch campaigns for the import dropdown
     const campaigns = await getCampaigns();
